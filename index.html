@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🛰️ 太空偷窥局 | Space Peep Bureau (SPB) - 绝密天基监视回溯与空间站抓捕终端</title>
+  <meta name="description" content="你以为你在独处，其实头顶有 17,000 颗眼睛在看你。太空偷窥局(SPB)提供过去7天对地遥感卫星偷窥底片调取，与未来夜间中国空间站天宫、国际空间站肉眼反向抓捕雷达。">
+  <meta name="keywords" content="太空偷窥局, 卫星过境查询, 空间站肉眼可见, 遥感卫星底片, Sentinel-2, Landsat, 天宫空间站, ISS过境, star.ucncn.cn">
+  <meta name="theme-color" content="#07090e">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="🛰️ 太空偷窥局 - 你以为你在独处，其实头顶有 17,000 颗眼睛在看你">
+  <meta property="og:description" content="白天调取被偷拍底片，今晚抬头反抓空间站。基于真实 SGP4 轨道算法与 NASA/ESA 遥感切片。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://star.ucncn.cn">
+
+  <!-- Schema.org SEO Structured Data (SoftwareApplication & FAQPage) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "太空偷窥局 (Space Peep Bureau)",
+        "operatingSystem": "All Web Browsers",
+        "applicationCategory": "EducationalApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "CNY"
+        },
+        "url": "https://star.ucncn.cn",
+        "description": "基于真实 SGP4 轨道力学与 NASA/ESA 遥感切片的天基对地监视底片回溯与中国空间站、ISS 肉眼反向抓捕终端。"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "为什么在夜晚可以用肉眼直接看到中国空间站和国际空间站？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "空间站运行在距离地表约 390~420 公里的近地轨道 (LEO)。在日落后或破晓前 1~2 小时，地面虽已陷入夜幕，但数百公里高空仍沐浴在阳光下。空间站巨大的柔性太阳能电池翼面积达上千平方米，犹如一面高悬天顶的超级反光镜，反射太阳光至地表，视星等常达 -2.0 至 -3.5 等，甚至亮于全天最明亮的恒星天狼星。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "遥感侦察卫星真的能拍到我吗？民用卫星的分辨率是多少？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "民用开放遥感卫星（如欧空局 Sentinel-2 哨兵系列分辨率约 10 米，美国 USGS Landsat 陆地卫星系列约 15 米），每个像素相当于半个网球场大小，主要用于宏观地貌与自然灾害监测，不会泄露个人隐私或车牌号；而商业军民两用遥感卫星（如 WorldView-3、高景系列）亚米级分辨率可达 0.3 米，足以分辨地面汽车与建筑物阴影轮廓。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "什么是 SGP4 轨道模型？太空偷窥局是如何计算卫星过境的？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "SGP4（Simplified General Perturbations Satellite Orbit Model 4）是国际通用的解析轨道力学算法，综合考虑了地球非球形引力摄动（J2/J3/J4项）、高空大气阻力摄动以及日月引力。本站采用纯前端 WebAssembly/JavaScript 引擎，直接结合北美防空司令部 (NORAD) 与 CelesTrak 公布的最新双行轨道根数 (TLE)，在用户浏览器本地毫秒级推导星下点与天顶仰角，无需上传任何个人地理位置。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "肉眼观测中国空间站需要望远镜吗？最佳观测时机是什么？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "不需要专业天文望远镜！当最高仰角大于 30° 且视星等低于 0 等时，在城市只要避开强路灯直射，肉眼即可清晰看到一颗平稳划过星空、不闪烁且无航行声音的极亮金色光点。观测最佳时机为过境最高仰角（Max Elevation）时刻的前后 2 分钟。"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: '#07090e',
+            darkcard: '#0d121f',
+            cyan: {
+              400: '#00ffc8',
+              500: '#00e5b3',
+              glow: 'rgba(0, 255, 200, 0.4)'
+            },
+            classified: '#ff2a55',
+            amberwarning: '#ffb800'
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            sans: ['"Noto Sans SC"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Cyber Dossier Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-space text-slate-100 min-h-screen relative font-sans bg-radar-grid selection:bg-cyan-500 selection:text-black">
+
+  <!-- CRT Scanlines & Shading Layers -->
+  <div class="scanlines-overlay"></div>
+  <div class="vignette-overlay"></div>
+
+  <!-- TOP CLASSIFICATION STATUS BAR -->
+  <header class="border-b border-cyan-400/20 bg-black/70 backdrop-blur-md sticky top-0 z-50 text-xs font-mono">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+      <!-- Left: Clearance Level -->
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-950/80 border border-red-500/60 text-red-400 font-bold tracking-wider animate-pulse">
+          <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5 animate-ping"></span>
+          CLEARANCE: LEVEL 5 // TOP SECRET
+        </span>
+        <span class="hidden sm:inline-block text-slate-500 font-mono">TERMINAL: SPB-NODE-786</span>
+      </div>
+
+      <!-- Center: Real-time Timers -->
+      <div class="flex items-center space-x-4 text-slate-400">
+        <div>
+          <span class="text-slate-500 text-[10px]">UTC:</span>
+          <span id="utc-clock" class="text-cyan-400 font-bold tracking-wider">--:--:-- Z</span>
+        </div>
+        <div class="hidden md:block">
+          <span class="text-slate-500 text-[10px]">LOCAL:</span>
+          <span id="local-clock" class="text-slate-300">--:--:--</span>
+        </div>
+      </div>
+
+      <!-- Right: Orbit Defense Status -->
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-1.5 text-emerald-400">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="tracking-widest text-[11px] font-semibold">TLE RADAR: ONLINE</span>
+        </div>
+        <span class="text-slate-600 hidden lg:inline">|</span>
+        <span class="text-slate-400 hidden lg:inline text-[11px]">SATS TRACKED: <span id="tracked-sat-count" class="text-cyan-400 font-semibold">17,420</span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 relative z-10">
+
+    <!-- HERO HEADER & CLASSIFIED BANNER -->
+    <section class="dossier-card hud-corner p-6 sm:p-8 rounded-lg relative overflow-hidden border-cyan-400/30">
+      <div class="absolute -right-8 -top-8 w-44 h-44 bg-cyan-400/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div class="space-y-3">
+          <!-- Tag & Department -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="badge-tech font-mono text-xs px-2.5 py-1 rounded tracking-widest font-semibold flex items-center">
+              <i data-lucide="satellite" class="w-3.5 h-3.5 mr-1.5 text-cyan-400"></i>
+              SPACE PEEP BUREAU (SPB) // 绝密档案编号 #ORBIT-2026
+            </span>
+            <span class="bg-slate-800/80 border border-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded font-mono">
+              DOMAIN: star.ucncn.cn
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-center gap-3">
+            <span class="text-glow-cyan">🛰️ 太空偷窥局</span>
+            <span class="text-sm sm:text-base font-mono font-normal text-slate-400 tracking-widest uppercase border-l-2 border-cyan-400/60 pl-3">
+              天基偷窥底片回溯 & 空间站反向抓捕终端
+            </span>
+          </h1>
+
+          <!-- Slogan -->
+          <p class="text-lg sm:text-xl font-medium text-slate-300">
+            “你以为你在独处，其实头顶有 <span class="text-glow-cyan font-mono font-bold text-cyan-400 underline decoration-cyan-400/40">17,000</span> 颗眼睛在看你。”
+          </p>
+          <p class="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400 flex-shrink-0"></i>
+            <span>白天调取被遥感卫星偷拍的绝密地表底片，今晚抬头用肉眼反向抓捕中国空间站与 ISS。</span>
+          </p>
+        </div>
+
+        <!-- Rubber Stamp Area -->
+        <div class="flex-shrink-0 flex flex-col items-end justify-center self-end sm:self-auto">
+          <div class="stamp-classified">
+            【绝密 · 太空偷窥局】
+          </div>
+          <div class="text-[10px] font-mono text-slate-500 mt-2 text-right">
+            SGP4 REALTIME ORBIT ENGINE<br>
+            UNAUTHORIZED ACCESS RECORDED
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOCATION & COORDINATE HUD CONSOLE -->
+    <section class="dossier-card hud-corner p-5 sm:p-6 rounded-lg space-y-5 border-cyan-400/20">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-cyan-400/10 pb-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></div>
+          <h2 class="font-mono text-sm tracking-widest uppercase font-bold text-cyan-400 flex items-center">
+            <i data-lucide="crosshair" class="w-4 h-4 mr-1.5"></i>
+            TARGET ACQUISITION CONSOLE // 目标地理坐标锁定
+          </h2>
+        </div>
+        <div class="text-xs font-mono text-slate-400 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+          <span>GEODETIC RADAR: <span id="radar-status-text" class="text-emerald-400 font-semibold">READY</span></span>
+        </div>
+      </div>
+
+      <!-- Input Controls Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- GPS Button -->
+        <div class="lg:col-span-4 flex">
+          <button id="btn-gps-locate" class="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded bg-cyan-400/10 hover:bg-cyan-400/20 border border-cyan-400/40 hover:border-cyan-400 text-cyan-300 font-mono text-sm font-semibold transition shadow-lg shadow-cyan-400/5 group">
+            <i data-lucide="locate-fixed" class="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform"></i>
+            <span>一键获取当前 GPS 坐标</span>
+            <span class="text-xs opacity-60">(HTML5定位)</span>
+          </button>
+        </div>
+
+        <!-- City Search Input -->
+        <div class="lg:col-span-5 relative">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <input 
+              id="city-search-input" 
+              type="text" 
+              placeholder="搜索城市（例如：北京 / 上海 / 深圳 / 伦敦）..." 
+              class="w-full pl-9 pr-24 py-3 rounded bg-slate-900/90 border border-slate-700/80 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 text-sm text-slate-200 font-mono transition"
+            >
+            <button id="btn-search-city" class="absolute right-1 top-1 bottom-1 px-3 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-xs font-mono rounded border border-cyan-500/30 transition">
+              锁定目标
+            </button>
+          </div>
+          <!-- City suggestions dropdown -->
+          <div id="city-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-900/95 border border-cyan-400/30 rounded shadow-2xl z-40 max-h-56 overflow-y-auto">
+            <!-- Dynamic dropdown items -->
+          </div>
+        </div>
+
+        <!-- Manual Lat/Lon Trigger -->
+        <div class="lg:col-span-3 flex">
+          <button id="btn-toggle-manual-coord" class="w-full py-3 px-3 rounded bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 font-mono text-xs flex items-center justify-center space-x-1.5 transition">
+            <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+            <span>微调高精经纬度</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick City Badges -->
+      <div class="flex items-center flex-wrap gap-2 pt-1">
+        <span class="text-xs font-mono text-slate-500 flex items-center mr-1">
+          <i data-lucide="navigation" class="w-3 h-3 mr-1"></i>快捷哨点:
+        </span>
+        <div id="quick-city-container" class="flex flex-wrap gap-1.5 text-xs font-mono">
+          <!-- Populated by JS from cities.json -->
+        </div>
+      </div>
+
+      <!-- Manual Coordinates Expanded Drawer (Hidden by default) -->
+      <div id="manual-coord-drawer" class="hidden p-4 bg-slate-950/70 border border-cyan-400/20 rounded font-mono text-xs space-y-3">
+        <div class="text-slate-400 flex items-center justify-between">
+          <span>手动输入大地坐标 (WGS-84 Decimal Degrees):</span>
+          <span class="text-[10px] text-slate-500">FORMAT: ±DD.DDDD</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">LATITUDE (纬度 -90 ~ +90):</label>
+            <input id="input-custom-lat" type="number" step="0.0001" value="39.9042" class="w-full p-2 bg-slate-900 border border-slate-700 rounded text-cyan-300 font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">LONGITUDE (经度 -180 ~ +180):</label>
+            <input id="input-custom-lon" type="number" step="0.0001" value="116.4074" class="w-full p-2 bg-slate-900 border border-slate-700 rounded text-cyan-300 font-mono text-xs">
+          </div>
+        </div>
+        <button id="btn-apply-custom-coord" class="px-4 py-1.5 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs rounded hover:bg-cyan-500/30 transition">
+          应用自定义坐标
+        </button>
+      </div>
+
+      <!-- Realtime Target HUD Display -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950/80 p-4 rounded border border-cyan-400/15 font-mono">
+        <div>
+          <div class="text-[10px] text-slate-500 uppercase">Target Location</div>
+          <div id="hud-city-name" class="text-base sm:text-lg font-bold text-white flex items-center gap-1.5">
+            <span>北京 (Beijing)</span>
+          </div>
+        </div>
+        <div>
+          <div class="text-[10px] text-slate-500 uppercase">Target Coordinates</div>
+          <div id="hud-coords" class="text-sm sm:text-base font-semibold text-cyan-400">
+            39.9042°N, 116.4074°E
+          </div>
+        </div>
+        <div>
+          <div class="text-[10px] text-slate-500 uppercase">Surveillance Radius</div>
+          <div class="text-sm sm:text-base font-semibold text-slate-300">
+            &lt; 150 km <span class="text-[10px] text-slate-500">(星下点盲区半径)</span>
+          </div>
+        </div>
+        <div>
+          <div class="text-[10px] text-slate-500 uppercase">Threat Level</div>
+          <div class="text-sm sm:text-base font-bold text-red-400 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+            <span>HIGH (高度暴露)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DUAL-DOSSIER TABS SECTION -->
+    <section class="space-y-6">
+      <!-- Tab Buttons Header -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-cyan-400/20 gap-3 pb-2">
+        <div class="flex items-center space-x-2">
+          <!-- Tab 1 -->
+          <button id="tab-btn-past" class="tab-btn active px-4 sm:px-6 py-3 font-mono text-sm sm:text-base font-bold rounded-t tracking-wider flex items-center">
+            <i data-lucide="film" class="w-4 h-4 mr-2"></i>
+            <span>卷宗 01：被偷窥底片库</span>
+            <span class="ml-2 text-[10px] font-normal px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
+              过去 7 天对地影像
+            </span>
+          </button>
+
+          <!-- Tab 2 -->
+          <button id="tab-btn-future" class="tab-btn px-4 sm:px-6 py-3 font-mono text-sm sm:text-base font-bold rounded-t tracking-wider text-slate-400 hover:text-cyan-300 flex items-center">
+            <i data-lucide="radar" class="w-4 h-4 mr-2"></i>
+            <span>卷宗 02：反向抓捕雷达</span>
+            <span class="ml-2 text-[10px] font-normal px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
+              未来 3 晚肉眼可见
+            </span>
+          </button>
+        </div>
+
+        <div class="text-xs font-mono text-slate-500 flex items-center justify-end self-end sm:self-auto space-x-2">
+          <i data-lucide="database" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>CELESTRAK & COPERNICUS REAL-TIME FEED</span>
+        </div>
+      </div>
+
+      <!-- TAB PANEL 1: 被偷窥底片库 (Past Surveillance) -->
+      <div id="tab-panel-past" class="space-y-6">
+        <!-- Dossier Alert & Brief -->
+        <div class="bg-red-950/20 border-l-4 border-red-500 p-4 rounded-r flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-mono">
+          <div class="flex items-start space-x-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"></i>
+            <div>
+              <div class="text-red-300 font-bold tracking-wide">
+                [!] 天基监视回溯警报：已检索过去 7 天内头顶对地光学快门事件
+              </div>
+              <div class="text-slate-400 text-xs mt-0.5">
+                经由 SGP4 轨道回溯，以下光学遥感卫星曾以极近星下点掠过当前坐标，真实高清底片已存入归档。
+              </div>
+            </div>
+          </div>
+          <div class="flex-shrink-0 flex items-center gap-2">
+            <button id="btn-export-dossier-all" class="px-3 py-1.5 bg-red-600/30 hover:bg-red-600/40 text-red-300 border border-red-500/50 rounded text-xs font-mono flex items-center space-x-1.5 transition">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>生成《绝密·被偷窥档案》海报</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter / Filter tags -->
+        <div class="flex items-center justify-between flex-wrap gap-3 font-mono text-xs text-slate-400">
+          <div class="flex items-center space-x-2">
+            <span>筛选过滤:</span>
+            <button id="filter-past-all" class="filter-past-btn px-2.5 py-1 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400 font-bold transition">全部底片 (<span id="filter-count-all">0</span>)</button>
+            <button id="filter-past-clear" class="filter-past-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition">仅晴空少云 (&le;20%)</button>
+            <button id="filter-past-hires" class="filter-past-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition">超高分辨率 (&le;10m)</button>
+          </div>
+          <div>
+            <span>更新频次：每日实时 SGP4 轨道解算</span>
+          </div>
+        </div>
+
+        <!-- Satellite Surveillance Dossier Cards Grid -->
+        <div id="past-dossier-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Card 1: Sentinel-2A -->
+          <article class="dossier-card hud-corner p-5 rounded-lg space-y-4 border-cyan-400/20 group hover:border-cyan-400/60">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="badge-tech font-mono text-[10px] px-2 py-0.5 rounded font-bold">ESA // OPTICAL</span>
+                  <span class="text-xs font-mono text-slate-500">NORAD #40697</span>
+                </div>
+                <h3 class="text-lg font-bold text-white mt-1 group-hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+                  <span>哨兵 2 号 A 星 (Sentinel-2A)</span>
+                </h3>
+              </div>
+              <span class="text-xs font-mono text-red-400 border border-red-500/40 px-1.5 py-0.5 rounded bg-red-950/40">
+                10m 分辨率
+              </span>
+            </div>
+
+            <!-- Satellite Viewfinder Preview Box -->
+            <div class="relative h-44 rounded bg-slate-950 overflow-hidden border border-slate-800 flex items-center justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80" 
+                alt="Satellite imagery preview" 
+                class="w-full h-full object-cover opacity-60 filter contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-700"
+              >
+              <!-- Viewfinder Crosshairs Overlay -->
+              <div class="absolute inset-0 pointer-events-none border border-cyan-400/20 flex items-center justify-center">
+                <div class="w-10 h-10 border border-cyan-400/60 rounded-full flex items-center justify-center">
+                  <div class="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping"></div>
+                </div>
+                <div class="absolute top-2 left-2 text-[9px] font-mono text-cyan-400 bg-black/60 px-1 rounded">
+                  LAT: 39.9042°N
+                </div>
+                <div class="absolute bottom-2 right-2 text-[9px] font-mono text-cyan-400 bg-black/60 px-1 rounded">
+                  ALT: 786 KM
+                </div>
+              </div>
+              <div class="absolute top-2 right-2 bg-red-600/80 text-white font-mono text-[10px] px-2 py-0.5 rounded font-bold">
+                已调取底片
+              </div>
+            </div>
+
+            <!-- Specs Grid -->
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300 bg-slate-950/60 p-3 rounded border border-slate-800/80">
+              <div>
+                <span class="text-slate-500 text-[10px] block">偷窥时刻 (PASS TIME)</span>
+                <span class="text-cyan-300 font-bold">3天前 10:48:12</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">星下点偏离 (OFFSET)</span>
+                <span class="text-emerald-400 font-bold">18.4 km (近天顶)</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">过境高度 (ALTITUDE)</span>
+                <span>786 km (太阳同步)</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">云量覆盖 (CLOUD COVER)</span>
+                <span class="text-amber-300 font-semibold">12% (晴空少云)</span>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="pt-1 flex items-center gap-2">
+              <button class="btn-generate-card-poster flex-1 py-2 px-3 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 rounded font-mono text-xs font-semibold flex items-center justify-center space-x-1.5 transition">
+                <i data-lucide="file-badge" class="w-3.5 h-3.5"></i>
+                <span>生成单星档案海报</span>
+              </button>
+              <button class="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-xs font-mono transition" title="查看遥感原始波段数据">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </article>
+
+          <!-- Card 2: Landsat 9 -->
+          <article class="dossier-card hud-corner p-5 rounded-lg space-y-4 border-cyan-400/20 group hover:border-cyan-400/60">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="badge-amber font-mono text-[10px] px-2 py-0.5 rounded font-bold">NASA/USGS // OLI-2</span>
+                  <span class="text-xs font-mono text-slate-500">NORAD #49260</span>
+                </div>
+                <h3 class="text-lg font-bold text-white mt-1 group-hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+                  <span>陆地卫星 9 号 (Landsat 9)</span>
+                </h3>
+              </div>
+              <span class="text-xs font-mono text-cyan-400 border border-cyan-500/40 px-1.5 py-0.5 rounded bg-cyan-950/40">
+                15m 分辨率
+              </span>
+            </div>
+
+            <!-- Satellite Viewfinder Preview Box -->
+            <div class="relative h-44 rounded bg-slate-950 overflow-hidden border border-slate-800 flex items-center justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" 
+                alt="Landsat preview" 
+                class="w-full h-full object-cover opacity-60 filter contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-700"
+              >
+              <div class="absolute inset-0 pointer-events-none border border-cyan-400/20 flex items-center justify-center">
+                <div class="w-10 h-10 border border-amber-400/60 rounded-full flex items-center justify-center">
+                  <div class="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                </div>
+                <div class="absolute top-2 left-2 text-[9px] font-mono text-amber-300 bg-black/60 px-1 rounded">
+                  LAT: 39.9042°N
+                </div>
+                <div class="absolute bottom-2 right-2 text-[9px] font-mono text-amber-300 bg-black/60 px-1 rounded">
+                  ALT: 705 KM
+                </div>
+              </div>
+              <div class="absolute top-2 right-2 bg-amber-600/80 text-white font-mono text-[10px] px-2 py-0.5 rounded font-bold">
+                已调取底片
+              </div>
+            </div>
+
+            <!-- Specs Grid -->
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300 bg-slate-950/60 p-3 rounded border border-slate-800/80">
+              <div>
+                <span class="text-slate-500 text-[10px] block">偷窥时刻 (PASS TIME)</span>
+                <span class="text-cyan-300 font-bold">5天前 11:02:40</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">星下点偏离 (OFFSET)</span>
+                <span class="text-slate-300 font-bold">42.1 km</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">过境高度 (ALTITUDE)</span>
+                <span>705 km (太阳同步)</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">云量覆盖 (CLOUD COVER)</span>
+                <span class="text-emerald-400 font-semibold">4% (极清通透)</span>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="pt-1 flex items-center gap-2">
+              <button class="btn-generate-card-poster flex-1 py-2 px-3 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 rounded font-mono text-xs font-semibold flex items-center justify-center space-x-1.5 transition">
+                <i data-lucide="file-badge" class="w-3.5 h-3.5"></i>
+                <span>生成单星档案海报</span>
+              </button>
+              <button class="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-xs font-mono transition">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </article>
+
+          <!-- Card 3: Sentinel-2B -->
+          <article class="dossier-card hud-corner p-5 rounded-lg space-y-4 border-cyan-400/20 group hover:border-cyan-400/60">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="badge-tech font-mono text-[10px] px-2 py-0.5 rounded font-bold">ESA // OPTICAL</span>
+                  <span class="text-xs font-mono text-slate-500">NORAD #42063</span>
+                </div>
+                <h3 class="text-lg font-bold text-white mt-1 group-hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+                  <span>哨兵 2 号 B 星 (Sentinel-2B)</span>
+                </h3>
+              </div>
+              <span class="text-xs font-mono text-red-400 border border-red-500/40 px-1.5 py-0.5 rounded bg-red-950/40">
+                10m 分辨率
+              </span>
+            </div>
+
+            <!-- Satellite Viewfinder Preview Box -->
+            <div class="relative h-44 rounded bg-slate-950 overflow-hidden border border-slate-800 flex items-center justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=600&q=80" 
+                alt="Sentinel-2B preview" 
+                class="w-full h-full object-cover opacity-60 filter contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-700"
+              >
+              <div class="absolute inset-0 pointer-events-none border border-cyan-400/20 flex items-center justify-center">
+                <div class="w-10 h-10 border border-cyan-400/60 rounded-full flex items-center justify-center">
+                  <div class="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                </div>
+                <div class="absolute top-2 left-2 text-[9px] font-mono text-cyan-400 bg-black/60 px-1 rounded">
+                  LAT: 39.9042°N
+                </div>
+                <div class="absolute bottom-2 right-2 text-[9px] font-mono text-cyan-400 bg-black/60 px-1 rounded">
+                  ALT: 786 KM
+                </div>
+              </div>
+              <div class="absolute top-2 right-2 bg-slate-700/80 text-white font-mono text-[10px] px-2 py-0.5 rounded font-bold">
+                已调取底片
+              </div>
+            </div>
+
+            <!-- Specs Grid -->
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300 bg-slate-950/60 p-3 rounded border border-slate-800/80">
+              <div>
+                <span class="text-slate-500 text-[10px] block">偷窥时刻 (PASS TIME)</span>
+                <span class="text-cyan-300 font-bold">6天前 10:52:19</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">星下点偏离 (OFFSET)</span>
+                <span class="text-emerald-400 font-bold">11.6 km (极近视距)</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">过境高度 (ALTITUDE)</span>
+                <span>786 km (太阳同步)</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[10px] block">云量覆盖 (CLOUD COVER)</span>
+                <span class="text-amber-300 font-semibold">22% (局部薄云)</span>
+              </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="pt-1 flex items-center gap-2">
+              <button class="btn-generate-card-poster flex-1 py-2 px-3 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 rounded font-mono text-xs font-semibold flex items-center justify-center space-x-1.5 transition">
+                <i data-lucide="file-badge" class="w-3.5 h-3.5"></i>
+                <span>生成单星档案海报</span>
+              </button>
+              <button class="py-2 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 text-xs font-mono transition">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- TAB PANEL 2: 反向抓捕雷达 (Future Passes & Stargazing) -->
+      <div id="tab-panel-future" class="hidden space-y-6">
+        <!-- Target Mission Brief -->
+        <div class="bg-amber-950/20 border-l-4 border-amber-400 p-4 rounded-r flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-mono">
+          <div class="flex items-start space-x-3">
+            <i data-lucide="telescope" class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5"></i>
+            <div>
+              <div class="text-amber-300 font-bold tracking-wide">
+                [★] 反向抓捕行动代号：SKY-EYE-SNIPER // 未来 72 小时夜间肉眼可见通报
+              </div>
+              <div class="text-slate-400 text-xs mt-0.5">
+                严密监控反射面积巨大、视星等常达负数的人造天体。当它们横跨夜空时，地面无需任何仪器，肉眼清晰可见如同流动亮星。
+              </div>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <span class="badge-amber font-mono text-xs px-2.5 py-1 rounded font-bold">
+              今晚晴空观测指数：94% 优
+            </span>
+          </div>
+        </div>
+
+        <!-- Future Passes Grid & Polar Radar Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <!-- Left Column: Passes Table List (7 cols) -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-mono text-xs uppercase tracking-widest text-cyan-400 flex items-center">
+                <i data-lucide="list-filter" class="w-4 h-4 mr-1.5"></i>
+                HIGH-VALUE PASS SCHEDULE // 重点目标过境时刻表
+              </h3>
+              <span id="future-passes-count-badge" class="badge-amber font-mono text-[10px] px-2 py-0.5 rounded font-bold">
+                计算中...
+              </span>
+            </div>
+
+            <!-- Future Passes Dynamic Container -->
+            <div id="future-passes-container" class="space-y-4">
+              <!-- Dynamically populated by OrbitEngine in app.js -->
+            </div>
+          </div>
+
+          <!-- Right Column: Polar Sky Radar View & Affiliate Gear (5 cols) -->
+          <div class="lg:col-span-5 space-y-4">
+            <h3 class="font-mono text-xs uppercase tracking-widest text-cyan-400 flex items-center">
+              <i data-lucide="compass" class="w-4 h-4 mr-1.5"></i>
+              CELESTIAL POLAR RADAR // 半球天顶极坐标光轨图
+            </h3>
+
+            <!-- Radar Canvas Container -->
+            <div class="dossier-card hud-corner p-4 rounded flex flex-col items-center justify-center relative overflow-hidden bg-slate-950/80 border-cyan-400/30">
+              <div class="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-2">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                  <span>ZENITH POLAR PROJECTION</span>
+                </span>
+                <button id="btn-simulate-pass" class="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono rounded flex items-center space-x-1 transition group">
+                  <i data-lucide="play" class="w-3 h-3 text-cyan-400 group-hover:scale-110"></i>
+                  <span>模拟今晚过境光轨</span>
+                </button>
+              </div>
+
+              <!-- Polar Sky Graphic (SVG / Canvas Hybrid) -->
+              <div class="relative w-64 h-64 sm:w-72 sm:h-72 my-2 flex items-center justify-center">
+                <!-- Outer Ring & Grid -->
+                <svg id="polar-radar-svg" viewBox="0 0 300 300" class="w-full h-full text-cyan-400/30">
+                  <!-- Cardinal axes -->
+                  <line x1="150" y1="10" x2="150" y2="290" stroke="currentColor" stroke-dasharray="3,3" />
+                  <line x1="10" y1="150" x2="290" y2="150" stroke="currentColor" stroke-dasharray="3,3" />
+
+                  <!-- Elevation rings: 0° (horizon), 30°, 60°, 90° (center) -->
+                  <circle cx="150" cy="150" r="140" fill="none" stroke="currentColor" stroke-width="1.5" />
+                  <circle cx="150" cy="150" r="95" fill="none" stroke="currentColor" stroke-dasharray="2,2" />
+                  <circle cx="150" cy="150" r="50" fill="none" stroke="currentColor" stroke-dasharray="2,2" />
+                  <circle cx="150" cy="150" r="4" fill="#00ffc8" />
+
+                  <!-- Compass text -->
+                  <text x="150" y="24" text-anchor="middle" fill="#00ffc8" font-size="12" font-family="monospace" font-weight="bold">N (北 0°)</text>
+                  <text x="276" y="154" text-anchor="middle" fill="#7f8ea3" font-size="10" font-family="monospace">E (东 90°)</text>
+                  <text x="150" y="286" text-anchor="middle" fill="#7f8ea3" font-size="10" font-family="monospace">S (南 180°)</text>
+                  <text x="24" y="154" text-anchor="middle" fill="#7f8ea3" font-size="10" font-family="monospace">W (西 270°)</text>
+
+                  <!-- Elevation text -->
+                  <text x="154" y="60" fill="#7f8ea3" font-size="9" font-family="monospace">60°</text>
+                  <text x="154" y="105" fill="#7f8ea3" font-size="9" font-family="monospace">30°</text>
+                  <text x="154" y="145" fill="#00ffc8" font-size="9" font-family="monospace">天顶 90°</text>
+
+                  <!-- Dynamic Pass Arcs rendered by app.js -->
+                  <g id="polar-radar-arcs">
+                    <!-- Dynamic SVG Paths will be injected here -->
+                  </g>
+                </svg>
+              </div>
+
+              <div class="w-full text-center text-xs font-mono text-slate-400 mt-1 border-t border-slate-800/80 pt-2 flex items-center justify-center gap-4">
+                <span class="flex items-center"><span class="w-2.5 h-1 bg-amber-400 mr-1.5 inline-block"></span> CSS 天宫过境弧</span>
+                <span class="flex items-center"><span class="w-2.5 h-1 bg-cyan-400 mr-1.5 inline-block"></span> ISS 空间站过境弧</span>
+              </div>
+            </div>
+
+            <!-- Stargazing Gear Touchpoint (Affiliate / 观星装备推荐) -->
+            <div class="dossier-card hud-corner p-4 rounded space-y-3 border-amber-400/20">
+              <div class="flex items-center justify-between">
+                <h4 class="font-mono text-xs font-bold text-amber-300 uppercase flex items-center">
+                  <i data-lucide="shopping-bag" class="w-3.5 h-3.5 mr-1.5"></i>
+                  OBSERVATION GEAR // 反抓与肉眼增强装备推荐
+                </h4>
+                <span class="text-[10px] text-slate-500 font-mono">SPB CERTIFIED</span>
+              </div>
+
+              <div class="space-y-2 text-xs">
+                <!-- Item 1 -->
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900/60 border border-slate-800 hover:border-cyan-400/40 transition">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="text-base">🔭</span>
+                    <div>
+                      <div class="font-bold text-slate-200">星特朗 70AZ 空间站便携入门寻星镜</div>
+                      <div class="text-[10px] text-slate-400">大口径超轻便携 · 极速跟踪空间站反光</div>
+                    </div>
+                  </div>
+                  <a href="#gear" class="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 font-mono text-[11px] rounded border border-cyan-500/30 flex items-center gap-1">
+                    <span>选购</span>
+                    <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                  </a>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="flex items-center justify-between p-2 rounded bg-slate-900/60 border border-slate-800 hover:border-cyan-400/40 transition">
+                  <div class="flex items-center space-x-2.5">
+                    <span class="text-base">👀</span>
+                    <div>
+                      <div class="font-bold text-slate-200">博冠 7x50 高透光广角双筒巡天望远镜</div>
+                      <div class="text-[10px] text-slate-400">大出瞳直径 · 暗夜观星巡天神器</div>
+                    </div>
+                  </div>
+                  <a href="#gear" class="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 font-mono text-[11px] rounded border border-cyan-500/30 flex items-center gap-1">
+                    <span>选购</span>
+                    <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SCIENTIFIC PRINCIPLES & SEO KNOWLEDGE BASE -->
+    <section class="dossier-card hud-corner p-6 sm:p-8 rounded-lg space-y-6 border-slate-700/80">
+      <div class="border-b border-cyan-400/20 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold font-mono text-cyan-300 flex items-center">
+            <i data-lucide="book-open" class="w-5 h-5 mr-2 text-cyan-400"></i>
+            DECLASSIFIED BRIEFING // 空间光学与天体观测硬核科普手册
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">深度解构天基对地侦察、SGP4 轨道动力学模型与空间站肉眼反抓光学原理</p>
+        </div>
+        <span class="text-xs font-mono text-slate-500 self-end sm:self-auto">DEEP BRIEFING v1.0</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 text-sm text-slate-300">
+        <!-- Topic 1 -->
+        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 01</span>
+            <span class="text-[10px] font-mono text-slate-500">OPTICAL IMAGERY</span>
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
+            遥感卫星真能看清你在做什么吗？
+          </h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            民用开放遥感卫星（如欧空局 Sentinel-2 分辨率约 10 米、Landsat-9 约 15 米），单像素相当于一辆厢式货车大小，用于宏观植被与地貌演变，不会泄露个人面部或车牌。但头顶运行的几十颗商用级高分卫星（如 WorldView-3、高景系列）亚米级分辨率达 0.3 米，建筑物门前停放的车辆品牌轮廓已能清晰投射。
+          </p>
+        </div>
+
+        <!-- Topic 2 -->
+        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-amber-400/40 transition">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-amber-400 font-mono text-xs font-bold">TOPIC // 02</span>
+            <span class="text-[10px] font-mono text-slate-500">CSS TIANGONG</span>
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm text-amber-300 leading-snug">
+            中国空间站 (天宫) 肉眼抓捕实战秘籍
+          </h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            天宫运行在倾角 41.5°、高度约 390km 的近地轨道。当其过境最高仰角（Max Elevation）大于 35° 时，即便身处一线城市市中心灯火中，肉眼也能清晰目睹一颗明亮如金星的金色光点在 3~6 分钟内静默划过天顶。它无声音、无航行灯交替闪烁，呈现稳恒超高反光，是夜晚最引人注目的国家重器。
+          </p>
+        </div>
+
+        <!-- Topic 3 -->
+        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 03</span>
+            <span class="text-[10px] font-mono text-slate-500">SGP4 PROPAGATION</span>
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
+            SGP4/SDP4 轨道摄动与纯前端无痕计算
+          </h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            太空偷窥局终端彻底摒弃服务器转发架构，将轨道摄动力学直接部署至浏览器客户端运行。基于北美防空司令部 (NORAD) 双行轨道根数 (TLE)，精细建模地球非球形重力场（J2~J4引力势）与稀薄大气阻力，在毫秒内完成地心坐标至观察者极坐标的投影，全程零隐私泄露、零痕迹存留。
+          </p>
+        </div>
+
+        <!-- Topic 4 -->
+        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 04</span>
+            <span class="text-[10px] font-mono text-slate-500">MAGNITUDE & LIGHT</span>
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
+            视星等换算与城市暗夜光害等级
+          </h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            视星等数值越低、负值越大代表天体越亮。中国空间站过顶反光常达 -2.5 等，国际空间站更可达 -3.5 等（远亮于全天最亮恒星天狼星 -1.46 等）。在城市 7~8 级光害区（Bortle 标度），普通肉眼可见极限星等约 +3.0 等，这意味着空间站即使在市中心商圈抬头亦肉眼可见。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- POSTER GENERATOR MODAL SKELETON (Phase 3 readiness) -->
+    <div id="poster-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+      <div class="dossier-card hud-corner max-w-lg w-full p-6 rounded-lg space-y-4 border-cyan-400/50 relative">
+        <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <div class="flex items-center space-x-2 border-b border-cyan-400/20 pb-3">
+          <span class="stamp-classified text-xs">TOP SECRET</span>
+          <h3 class="text-base font-bold text-white font-mono">《绝密·天基被偷窥档案》海报预览</h3>
+        </div>
+
+        <!-- Canvas Poster Render Area Placeholder -->
+        <div class="relative bg-slate-950 rounded border border-cyan-400/30 aspect-[9/16] max-h-[520px] mx-auto flex flex-col items-center justify-between p-6 overflow-hidden">
+          <canvas id="poster-canvas" class="w-full h-full object-contain"></canvas>
+          <div id="poster-placeholder" class="text-center my-auto space-y-2 text-slate-400">
+            <i data-lucide="camera" class="w-10 h-10 mx-auto text-cyan-400 animate-pulse"></i>
+            <div class="text-xs font-mono text-cyan-300">CANVAS POSTER ENGINE // PHASE 3 READY</div>
+            <p class="text-[11px] text-slate-500 max-w-xs">
+              正在合成当前坐标、Sentinel-2 遥感切片、十字瞄准线与绝密钢印...
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-2">
+          <button id="btn-cancel-poster" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono">
+            关闭
+          </button>
+          <button id="btn-download-poster" class="px-5 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs font-mono flex items-center space-x-1.5 transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>保存海报发朋友圈/小红书</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- CLASSIFIED FOOTER -->
+  <footer class="border-t border-cyan-400/20 bg-slate-950/90 py-8 text-xs font-mono text-slate-500 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="space-y-1 text-center md:text-left">
+        <div class="text-slate-300 font-bold flex items-center justify-center md:justify-start gap-2">
+          <span>🛰️ 太空偷窥局 (Space Peep Bureau - SPB)</span>
+          <span class="text-[10px] text-cyan-400 bg-cyan-400/10 px-1.5 py-0.5 rounded border border-cyan-400/30">v1.0.0</span>
+        </div>
+        <div class="text-[11px] text-slate-500">
+          独立站运行模式 A ｜ 域名：<a href="https://star.ucncn.cn" class="text-cyan-400 hover:underline">star.ucncn.cn</a> ｜ 纯前端零后端无痕架构
+        </div>
+      </div>
+
+      <div class="text-center md:text-right space-y-1 text-[11px]">
+        <div>
+          数据源致谢：<span class="text-slate-400">NASA GIBS</span> · <span class="text-slate-400">ESA Copernicus</span> · <span class="text-slate-400">CelesTrak SGP4</span>
+        </div>
+        <div class="text-slate-600">
+          声明：本站数据基于国际民用公开遥感及轨道数据，仅供天文观测与科学普及，不涉及任何军事机密。
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SGP4 Orbit Calculation Engine & Data -->
+  <script src="assets/js/satellite.min.js"></script>
+  <script src="assets/js/orbit.js"></script>
+  <script src="assets/js/poster.js"></script>
+  <!-- App Core JS -->
+  <script src="assets/js/app.js"></script>
+  <script>
+    // Initialize Lucide Icons
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+/* 
+ * 太空偷窥局 (Space Peep Bureau - SPB)
+ * Confidential Dossier & Cyber Console Stylesheet
+ * Base theme: #0a0d14 / #00ffc8 / #ff2a55
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+
+:root {
+  --bg-space: #07090e;
+  --bg-card: rgba(13, 18, 31, 0.82);
+  --bg-card-hover: rgba(18, 25, 43, 0.92);
+  --border-dim: rgba(0, 255, 200, 0.15);
+  --border-bright: rgba(0, 255, 200, 0.55);
+  --border-red: rgba(255, 42, 85, 0.65);
+  --color-cyan: #00ffc8;
+  --color-cyan-glow: rgba(0, 255, 200, 0.35);
+  --color-blue: #00c0ff;
+  --color-secret-red: #ff2a55;
+  --color-warning-amber: #ffb800;
+  --color-text-dim: #7f8ea3;
+  --color-text-main: #e2e8f0;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, Monaco, monospace;
+  --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Reset & Global */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: var(--bg-space);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.5;
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090c13;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 200, 0.25);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 200, 0.6);
+}
+
+/* Cyber Background Grid & Starry Pattern */
+.bg-radar-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0, 255, 200, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 255, 200, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+/* Subtle CRT Scanlines Overlay */
+.scanlines-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 4px;
+  opacity: 0.65;
+}
+
+/* Vignette edge shading */
+.vignette-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(circle at center, transparent 65%, rgba(4, 6, 10, 0.85) 100%);
+}
+
+/* Dossier Card Box */
+.dossier-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dossier-card:hover {
+  border-color: var(--border-bright);
+  box-shadow: 0 8px 30px rgba(0, 255, 200, 0.07);
+}
+
+/* Corner Crosshairs / HUD Reticle accents */
+.hud-corner {
+  position: relative;
+}
+.hud-corner::before,
+.hud-corner::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  border-color: var(--color-cyan);
+  opacity: 0.6;
+}
+.hud-corner::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--color-cyan);
+  border-left: 2px solid var(--color-cyan);
+}
+.hud-corner::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--color-cyan);
+  border-right: 2px solid var(--color-cyan);
+}
+
+/* Red Classified Rubber Stamp Effect */
+.stamp-classified {
+  display: inline-block;
+  padding: 4px 14px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: var(--color-secret-red);
+  border: 2px solid var(--color-secret-red);
+  border-radius: 4px;
+  transform: rotate(-4deg);
+  box-shadow: 0 0 14px rgba(255, 42, 85, 0.25);
+  text-shadow: 0 0 6px rgba(255, 42, 85, 0.45);
+  user-select: none;
+  position: relative;
+}
+.stamp-classified::after {
+  content: 'TOP SECRET';
+  position: absolute;
+  bottom: -9px;
+  right: -6px;
+  font-size: 9px;
+  background: var(--bg-space);
+  padding: 0 3px;
+  color: var(--color-secret-red);
+  border: 1px solid var(--color-secret-red);
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* Glowing text effects */
+.text-glow-cyan {
+  color: var(--color-cyan);
+  text-shadow: 0 0 10px var(--color-cyan-glow), 0 0 20px rgba(0, 255, 200, 0.2);
+}
+
+.text-glow-red {
+  color: var(--color-secret-red);
+  text-shadow: 0 0 10px rgba(255, 42, 85, 0.4);
+}
+
+.text-glow-amber {
+  color: var(--color-warning-amber);
+  text-shadow: 0 0 10px rgba(255, 184, 0, 0.35);
+}
+
+/* Radar pulse animation */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  animation: radar-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+/* Active tab style with classified folder vibe */
+.tab-btn {
+  position: relative;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+.tab-btn.active {
+  color: var(--color-cyan);
+  background: rgba(0, 255, 200, 0.08);
+  border-bottom: 2px solid var(--color-cyan);
+}
+.tab-btn.active::before {
+  content: '▶';
+  margin-right: 6px;
+  font-size: 10px;
+  color: var(--color-cyan);
+}
+
+/* Glitch subtle text animation on hover */
+@keyframes micro-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.6; }
+  94% { opacity: 1; }
+  97% { opacity: 0.8; }
+  98% { opacity: 1; }
+}
+.flicker-hover:hover {
+  animation: micro-flicker 0.4s infinite;
+}
+
+/* Target reticle icon */
+.reticle-mark {
+  background: radial-gradient(circle, var(--color-cyan) 2px, transparent 3px);
+  position: relative;
+}
+
+/* Badge styling */
+.badge-tech {
+  background: rgba(0, 255, 200, 0.08);
+  border: 1px solid rgba(0, 255, 200, 0.25);
+  color: var(--color-cyan);
+}
+
+.badge-red {
+  background: rgba(255, 42, 85, 0.12);
+  border: 1px solid rgba(255, 42, 85, 0.4);
+  color: #ff5e7e;
+}
+
+.badge-amber {
+  background: rgba(255, 184, 0, 0.12);
+  border: 1px solid rgba(255, 184, 0, 0.35);
+  color: #ffc42e;
+}

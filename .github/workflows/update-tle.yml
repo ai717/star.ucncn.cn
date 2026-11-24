@@ -1,0 +1,33 @@
+name: Auto Update Satellite TLE Daily
+
+on:
+  schedule:
+    # 每天 UTC 03:00 (北京时间 11:00) 自动拉取 CelesTrak 最新星历
+    - cron: '0 3 * * *'
+  workflow_dispatch: # 支持在 GitHub 后台手动一键触发
+
+permissions:
+  contents: write
+
+jobs:
+  update-tle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch and Update TLE Data
+        run: |
+          python scripts/update_tle.py
+
+      - name: Commit and Push Changes if TLE updated
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add assets/data/satellites.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(tle): auto-update satellite orbital ephemeris [skip ci]" && git push)
