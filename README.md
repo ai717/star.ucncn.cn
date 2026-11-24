@@ -80,9 +80,35 @@ python scripts/update_tle.py
 
 ---
 
-## 🌐 生产部署指南 (Nginx & Cloudflare)
+## 🚀 部署方案 A（首选推荐）：直接托管在 GitHub Pages (零服务器成本)
 
-本站生产配置文件已预置于 [scripts/nginx_star.ucncn.cn.conf](scripts/nginx_star.ucncn.cn.conf)：
+本站为 100% 纯静态单页架构，**强烈推荐直接部署在 GitHub Pages**：
+* 免费全球 CDN 加速、99.99% 高可用；
+* 自动签发并续期免费 Let's Encrypt HTTPS 证书；
+* 内置 GitHub Actions 每 24 小时自动拉取 CelesTrak 最新星历并提交，完全免运维！
+
+### 部署 3 步走：
+1. **新建 GitHub 仓库**：在 GitHub 上创建一个新公开仓库（如 `star` 或 `space-peep`）；
+2. **关联并推送代码**：
+   ```bash
+   cd G:\work\code\website\ucncn\star
+   git remote add origin git@github.com:你的用户名/仓库名.git
+   git push -u origin main
+   ```
+3. **开启 GitHub Pages 与自定义域名**：
+   * 仓库已内置 `CNAME` 文件（写入 `star.ucncn.cn`）；
+   * 进入 GitHub 仓库 -> **Settings** -> **Pages** -> Source 选择 `Deploy from a branch (main / root)`；
+   * 在 DNS 服务商（如 Cloudflare / 腾讯云 / 阿里云）添加一条解析：
+     * **记录类型**：`CNAME`
+     * **主机记录**：`star`
+     * **记录值**：`你的用户名.github.io`
+   * 等待 2~5 分钟，GitHub 即可自动完成免费 SSL 签发与上线！
+
+---
+
+## 🌐 部署方案 B（备用）：自建 Nginx 服务器部署
+
+若希望放在自己的独立云服务器上，配置文件已预置于 [scripts/nginx_star.ucncn.cn.conf](scripts/nginx_star.ucncn.cn.conf)：
 
 1. **绑定域名**：配置 DNS 解析 `star.ucncn.cn` 指向服务器 IP；
 2. **复制配置**：
