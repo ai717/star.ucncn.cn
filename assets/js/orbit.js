@@ -208,6 +208,27 @@
     },
 
     /**
+     * Compute current real-time geodetic position for a specific satellite
+     */
+    getLivePosition(satId, date = new Date()) {
+      const satrec = this.satRecs[satId];
+      if (!satrec || !window.satellite) return null;
+      try {
+        const gmst = window.satellite.gstime(date);
+        const posVel = window.satellite.propagate(satrec, date);
+        if (posVel && posVel.position) {
+          const geodetic = window.satellite.eciToGeodetic(posVel.position, gmst);
+          return {
+            lat: geodetic.latitude * RAD2DEG,
+            lon: geodetic.longitude * RAD2DEG,
+            alt: geodetic.height
+          };
+        }
+      } catch (e) {}
+      return null;
+    },
+
+    /**
      * 卷宗一：被偷窥底片库
      * Compute past daytime earth-observation recon passes over target coordinates
      * @param {number} lat Observer latitude
@@ -445,6 +466,136 @@
       // Sort by rise time ascending (next pass first)
       visiblePasses.sort((a, b) => a.rise.time - b.rise.time);
       return visiblePasses;
+    },
+
+    /**
+     * 优化 3：NASA GIBS 真实过境日切片地址解析
+     * 基于 EPSG:4326 250m Level 6 网格矩阵计算瓦片行与列
+     */
+    getNasaGibsTileUrl(lat, lon, date = new Date()) {
+      let d = new Date(date);
+      const now = new Date();
+      // NASA GIBS 日切片通常在次日完成全球合成，若请求时刻过新则自动回退 24 小时以确保有图
+      if (d > now || (now - d) < 20 * 3600 * 1000) {
+        d = new Date(now.getTime() - 24 * 3600 * 1000);
+      }
+      const year = d.getUTCFullYear();
+      const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(d.getUTCDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+
+      // Level 6 矩阵规范: MatrixWidth=80, MatrixHeight=40
+      const col = Math.floor(((lon + 180.0) / 360.0) * 80);
+      const row = Math.floor(((90.0 - lat) / 180.0) * 40);
+      const safeCol = Math.max(0, Math.min(79, col));
+      const safeRow = Math.max(0, Math.min(39, row));
+
+      return `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${dateStr}/250m/6/${safeRow}/${safeCol}.jpg`;
+    },
+
+    /**
+     * 优化 4：计算卫星地表星下点预测光轨 (Ground Track)
+     * 用于 2D 全球正弦投影地图绘制
+     */
+    computeGroundTrack(satId, startTime = new Date(), durationMinutes = 95, stepMinutes = 2) {
+      const satrec = this.satRecs[satId];
+      if (!satrec || !window.satellite) return [];
+
+      const segments = [];
+      let currentSegment = [];
+      let lastLon = null;
+
+      const totalMs = durationMinutes * 60 * 1000;
+      const stepMs = stepMinutes * 60 * 1000;
+      const startMs = startTime.getTime();
+
+      for (let t = startMs; t <= startMs + totalMs; t += stepMs) {
+        const curDate = new Date(t);
+        const gmst = window.satellite.gstime(curDate);
+        const posVel = window.satellite.propagate(satrec, curDate);
+
+        if (posVel && posVel.position) {
+          const geodetic = window.satellite.eciToGeodetic(posVel.position, gmst);
+          const lat = geodetic.latitude * RAD2DEG;
+          const lon = geodetic.longitude * RAD2DEG;
+
+          // Longitude crossing detector (e.g. -180 to +180 wrap)
+          if (lastLon !== null && Math.abs(lon - lastLon) > 180) {
+            if (currentSegment.length > 0) {
+              segments.push(currentSegment);
+              currentSegment = [];
+            }
+          }
+
+          currentSegment.push({ lat, lon, time: curDate });
+          lastLon = lon;
+        }
+      }
+
+      if (currentSegment.length > 0) {
+        segments.push(currentSegment);
+      }
+      return segments;
+    },
+
+    /**
+     * 优化 1：生成标准 iCalendar (.ics) 提醒文件内容
+     */
+    generateIcsContent(pass, cityName, lat, lon) {
+      function toIcsFormat(d) {
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+      }
+
+      const satName = pass.satellite.name;
+      const startStr = toIcsFormat(pass.rise.time);
+      const endStr = toIcsFormat(pass.set.time);
+      const stampStr = toIcsFormat(new Date());
+      const uid = `spb-${pass.satellite.id}-${pass.rise.time.getTime()}@star.ucncn.cn`;
+
+      const summary = `🛰️ 肉眼抓捕：${satName} 过顶 (仰角 ${pass.max.elevation}°)`;
+      const description = `太空偷窥局观测通报：${satName} 即将过境！\\n升起时刻：${pass.rise.compass} ${pass.rise.azimuth}°\\n最高仰角：${pass.max.elevation}° (${pass.max.compass} ${pass.max.azimuth}°)\\n视星等预估：${pass.magnitude} 等 (${pass.visibilityGrade})\\n持续时间：${pass.durationFormatted}\\n观测终端：https://star.ucncn.cn`;
+      const location = `${cityName} (${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E)`;
+
+      return [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Space Peep Bureau//SPB Orbit Terminal//CN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTAMP:${stampStr}`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `SUMMARY:${summary}`,
+        `DESCRIPTION:${description}`,
+        `LOCATION:${location}`,
+        'STATUS:CONFIRMED',
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:空间站即将在 15 分钟后过境，请准备抬头肉眼观测！',
+        'TRIGGER:-PT15M',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+    },
+
+    /**
+     * 优化 2：异步拉取 Open-Meteo 实时夜间云量与视宁度数据 (免Key/CORS友好)
+     */
+    async fetchWeatherForecast(lat, lon) {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=cloud_cover,visibility&hourly=cloud_cover,visibility&forecast_days=3&timezone=auto`;
+        const resp = await fetch(url);
+        if (resp.ok) {
+          return await resp.json();
+        }
+      } catch (e) {
+        console.warn('Open-Meteo weather fetch failed, using fallback:', e);
+      }
+      return null;
     }
   };
 

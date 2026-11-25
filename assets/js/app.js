@@ -17,6 +17,7 @@
     satellites: [],
     pastPasses: [],
     futurePasses: [],
+    weather: null,
     selectedPassForPoster: null
   };
 
@@ -50,6 +51,13 @@
     filterCountAll: document.getElementById('filter-count-all'),
     polarRadarArcs: document.getElementById('polar-radar-arcs'),
     btnSimulatePass: document.getElementById('btn-simulate-pass'),
+    trackerCssPos: document.getElementById('tracker-css-pos'),
+    trackerCssAlt: document.getElementById('tracker-css-alt'),
+    trackerIssPos: document.getElementById('tracker-iss-pos'),
+    trackerIssAlt: document.getElementById('tracker-iss-alt'),
+    worldMapTracks: document.getElementById('world-map-tracks'),
+    worldMapTarget: document.getElementById('world-map-target'),
+    worldMapSats: document.getElementById('world-map-sats'),
     posterModal: document.getElementById('poster-modal'),
     btnCloseModal: document.getElementById('btn-close-modal'),
     btnCancelPoster: document.getElementById('btn-cancel-poster'),
@@ -199,6 +207,9 @@
 
     renderQuickCityBadges();
 
+    // Update 2D tracker target marker
+    updateWorldMapTracker();
+
     // Trigger recalculation
     calculateOrbitsForLocation();
   }
@@ -246,6 +257,18 @@
       renderPastDossierCards();
       renderFuturePasses();
       renderPolarRadarArcs();
+      updateWorldMapTracker();
+
+      // 优化 2：并发拉取 Open-Meteo 真实云量与视宁度数据并无缝注入
+      if (window.OrbitEngine.fetchWeatherForecast) {
+        window.OrbitEngine.fetchWeatherForecast(SPB_STATE.currentLat, SPB_STATE.currentLon).then(w => {
+          if (w) {
+            SPB_STATE.weather = w;
+            renderFuturePasses();
+            if (window.lucide) lucide.createIcons();
+          }
+        });
+      }
 
       if (window.lucide) lucide.createIcons();
     }, 50);
@@ -316,6 +339,11 @@
       const sat = pass.satellite;
       const previewImg = satelliteImages[idx % satelliteImages.length];
 
+      // 优化 3：动态解析 NASA GIBS 该过境日期的真实卫星图切片
+      const nasaTileUrl = window.OrbitEngine && window.OrbitEngine.getNasaGibsTileUrl
+        ? window.OrbitEngine.getNasaGibsTileUrl(SPB_STATE.currentLat, SPB_STATE.currentLon, pass.closestTime)
+        : previewImg;
+
       const card = document.createElement('article');
       card.className = 'dossier-card hud-corner p-5 rounded-lg space-y-4 border-cyan-400/20 group hover:border-cyan-400/60';
 
@@ -343,12 +371,13 @@
           ${resolutionBadge}
         </div>
 
-        <!-- Satellite Viewfinder Preview Box -->
+        <!-- Satellite Viewfinder Preview Box (NASA GIBS True Overpass Imagery) -->
         <div class="relative h-44 rounded bg-slate-950 overflow-hidden border border-slate-800 flex items-center justify-center">
           <img 
-            src="${previewImg}" 
-            alt="${sat.name} preview" 
-            class="w-full h-full object-cover opacity-60 filter contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-700"
+            src="${nasaTileUrl}" 
+            alt="${sat.name} NASA GIBS Imagery" 
+            onerror="this.onerror=null; this.src='${previewImg}';"
+            class="w-full h-full object-cover opacity-75 filter contrast-125 brightness-95 group-hover:scale-105 transition-transform duration-700"
           >
           <!-- Reticle Overlay -->
           <div class="absolute inset-0 pointer-events-none border border-cyan-400/20 flex items-center justify-center">
@@ -362,8 +391,9 @@
               ALT: ${pass.altitudeKm} KM
             </div>
           </div>
-          <div class="absolute top-2 right-2 bg-red-600/80 text-white font-mono text-[10px] px-2 py-0.5 rounded font-bold tracking-wider">
-            底片已就绪
+          <div class="absolute top-2 right-2 bg-red-600/90 text-white font-mono text-[10px] px-2 py-0.5 rounded font-bold tracking-wider flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+            <span>NASA GIBS 真实过境底片</span>
           </div>
         </div>
 
@@ -453,6 +483,21 @@
 
       const magColor = pass.magnitude <= 0 ? 'text-emerald-400' : (pass.magnitude <= 2 ? 'text-cyan-300' : 'text-slate-300');
 
+      // Open-Meteo Weather forecast integration
+      let weatherBadge = '';
+      if (SPB_STATE.weather && SPB_STATE.weather.hourly && SPB_STATE.weather.hourly.time) {
+        const passIsoHour = pass.rise.time.toISOString().slice(0, 13) + ':00';
+        const hourIdx = SPB_STATE.weather.hourly.time.findIndex(t => t.startsWith(passIsoHour.slice(0, 13)));
+        if (hourIdx !== -1) {
+          const clouds = SPB_STATE.weather.hourly.cloud_cover[hourIdx];
+          const cloudIcon = clouds <= 20 ? '✨' : (clouds <= 50 ? '⛅' : '☁️');
+          const cloudColor = clouds <= 20 ? 'text-emerald-400 border-emerald-500/40 bg-emerald-950/40' : (clouds <= 50 ? 'text-amber-300 border-amber-500/40 bg-amber-950/40' : 'text-slate-400 border-slate-700 bg-slate-900/60');
+          weatherBadge = `<span class="text-[10px] font-mono px-2 py-0.5 rounded border ${cloudColor} flex items-center gap-1" title="Open-Meteo 真实气象云量预报">
+            <span>${cloudIcon} 云量 ${clouds}% (${clouds <= 20 ? '通透绝佳' : (clouds <= 50 ? '间歇可见' : '较多遮蔽')})</span>
+          </span>`;
+        }
+      }
+
       item.innerHTML = `
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
@@ -485,16 +530,43 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-1">
-          <span class="text-emerald-400 flex items-center">
-            <i data-lucide="eye" class="w-3.5 h-3.5 mr-1"></i> ${pass.visibilityGrade} · 视持续 ${pass.durationFormatted}
-          </span>
-          <button class="btn-focus-radar-arc text-xs text-cyan-400 hover:text-cyan-300 hover:underline flex items-center transition">
-            <span>天顶投影光轨</span>
-            <i data-lucide="crosshair" class="w-3.5 h-3.5 ml-1"></i>
-          </button>
+        <div class="flex flex-wrap items-center justify-between text-xs font-mono text-slate-400 pt-1 gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-emerald-400 flex items-center">
+              <i data-lucide="eye" class="w-3.5 h-3.5 mr-1"></i> ${pass.visibilityGrade} · 视持续 ${pass.durationFormatted}
+            </span>
+            ${weatherBadge}
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn-export-ics text-xs text-amber-300 hover:text-amber-200 border border-amber-400/40 hover:border-amber-400 bg-amber-950/30 px-2 py-0.5 rounded flex items-center transition" title="下载 .ics 日历文件，支持 iOS/Android/Mac 一键写入系统日程">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1"></i>
+              <span>⏰ 写入手机日历</span>
+            </button>
+            <button class="btn-focus-radar-arc text-xs text-cyan-400 hover:text-cyan-300 hover:underline flex items-center transition">
+              <span>天顶投影光轨</span>
+              <i data-lucide="crosshair" class="w-3.5 h-3.5 ml-1"></i>
+            </button>
+          </div>
         </div>
       `;
+
+      // ICS Calendar Export
+      const btnIcs = item.querySelector('.btn-export-ics');
+      if (btnIcs) {
+        btnIcs.addEventListener('click', () => {
+          if (!window.OrbitEngine || !window.OrbitEngine.generateIcsContent) return;
+          const icsContent = window.OrbitEngine.generateIcsContent(pass, SPB_STATE.currentCity, SPB_STATE.currentLat, SPB_STATE.currentLon);
+          const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = `太空偷窥局_${pass.satellite.name}_${SPB_STATE.currentCity}_过境提醒.ics`;
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        });
+      }
 
       // Focus radar arc on click
       const btnFocus = item.querySelector('.btn-focus-radar-arc');
@@ -909,6 +981,122 @@
     });
   }
 
+  // 10. Global 2D World Map Real-time Tracker (CSS Tiangong & ISS)
+  function updateWorldMapTracker() {
+    if (!window.OrbitEngine || !window.OrbitEngine.getLivePosition) return;
+
+    const now = new Date();
+    const MAP_W = 800;
+    const MAP_H = 400;
+
+    const toSvgCoords = (lat, lon) => {
+      const x = ((lon + 180.0) / 360.0) * MAP_W;
+      const y = ((90.0 - lat) / 180.0) * MAP_H;
+      return {
+        x: Math.max(0, Math.min(MAP_W, x)),
+        y: Math.max(0, Math.min(MAP_H, y))
+      };
+    };
+
+    // 1. Update Target City Marker
+    if (dom.worldMapTarget) {
+      const tPos = toSvgCoords(SPB_STATE.currentLat, SPB_STATE.currentLon);
+      dom.worldMapTarget.innerHTML = `
+        <circle cx="${tPos.x.toFixed(1)}" cy="${tPos.y.toFixed(1)}" r="5" fill="#00ffc8" class="animate-ping" opacity="0.6"/>
+        <circle cx="${tPos.x.toFixed(1)}" cy="${tPos.y.toFixed(1)}" r="3" fill="#00ffc8" stroke="#07090e" stroke-width="1.5"/>
+        <text x="${(tPos.x + 7).toFixed(1)}" y="${(tPos.y + 3).toFixed(1)}" fill="#00ffc8" font-size="9" font-family="monospace" font-weight="bold">${SPB_STATE.currentCity}</text>
+      `;
+    }
+
+    // 2. Fetch Live Positions for CSS and ISS
+    const cssPos = window.OrbitEngine.getLivePosition('css', now);
+    const issPos = window.OrbitEngine.getLivePosition('iss', now);
+
+    if (cssPos && dom.trackerCssPos && dom.trackerCssAlt) {
+      const latD = cssPos.lat >= 0 ? `${cssPos.lat.toFixed(2)}°N` : `${Math.abs(cssPos.lat).toFixed(2)}°S`;
+      const lonD = cssPos.lon >= 0 ? `${cssPos.lon.toFixed(2)}°E` : `${Math.abs(cssPos.lon).toFixed(2)}°W`;
+      dom.trackerCssPos.textContent = `${latD}, ${lonD}`;
+      dom.trackerCssAlt.textContent = `${cssPos.alt.toFixed(1)} km`;
+    }
+
+    if (issPos && dom.trackerIssPos && dom.trackerIssAlt) {
+      const latD = issPos.lat >= 0 ? `${issPos.lat.toFixed(2)}°N` : `${Math.abs(issPos.lat).toFixed(2)}°S`;
+      const lonD = issPos.lon >= 0 ? `${issPos.lon.toFixed(2)}°E` : `${Math.abs(issPos.lon).toFixed(2)}°W`;
+      dom.trackerIssPos.textContent = `${latD}, ${lonD}`;
+      dom.trackerIssAlt.textContent = `${issPos.alt.toFixed(1)} km`;
+    }
+
+    // 3. Render Ground Tracks on World Map (Past 45m to Future 45m)
+    if (dom.worldMapTracks && window.OrbitEngine.computeGroundTrack) {
+      const buildTrackPath = (points, strokeColor, strokeDash = '3,2') => {
+        if (!points || points.length < 2) return '';
+        const paths = [];
+        let currentSegment = [];
+
+        for (let i = 0; i < points.length; i++) {
+          const pt = points[i];
+          if (currentSegment.length > 0) {
+            const prev = points[i - 1];
+            // If satellite crossed the antimeridian (+180 / -180)
+            if (Math.abs(pt.lon - prev.lon) > 180) {
+              paths.push(currentSegment);
+              currentSegment = [];
+            }
+          }
+          currentSegment.push(toSvgCoords(pt.lat, pt.lon));
+        }
+        if (currentSegment.length > 0) paths.push(currentSegment);
+
+        return paths.map(seg => {
+          if (seg.length < 2) return '';
+          let d = `M ${seg[0].x.toFixed(1)} ${seg[0].y.toFixed(1)}`;
+          for (let k = 1; k < seg.length; k++) {
+            d += ` L ${seg[k].x.toFixed(1)} ${seg[k].y.toFixed(1)}`;
+          }
+          return `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-width="1.3" stroke-dasharray="${strokeDash}" opacity="0.8" />`;
+        }).join('');
+      };
+
+      const pastStart = new Date(now.getTime() - 45 * 60000);
+      const cssTrackPts = window.OrbitEngine.computeGroundTrack('css', pastStart, 90, 2);
+      const issTrackPts = window.OrbitEngine.computeGroundTrack('iss', pastStart, 90, 2);
+
+      let tracksHtml = '';
+      tracksHtml += buildTrackPath(cssTrackPts, '#ffb800');
+      tracksHtml += buildTrackPath(issTrackPts, '#00ffc8');
+      dom.worldMapTracks.innerHTML = tracksHtml;
+    }
+
+    // 4. Render Satellite Position Icons
+    if (dom.worldMapSats) {
+      let satsHtml = '';
+
+      if (cssPos) {
+        const p = toSvgCoords(cssPos.lat, cssPos.lon);
+        satsHtml += `
+          <g transform="translate(${p.x.toFixed(1)}, ${p.y.toFixed(1)})">
+            <circle cx="0" cy="0" r="9" fill="#ffb800" opacity="0.25" class="animate-ping" />
+            <circle cx="0" cy="0" r="4.5" fill="#ffb800" stroke="#07090e" stroke-width="1.5" />
+            <text x="7" y="3" fill="#ffb800" font-size="8.5" font-family="monospace" font-weight="bold">CSS 天宫</text>
+          </g>
+        `;
+      }
+
+      if (issPos) {
+        const p = toSvgCoords(issPos.lat, issPos.lon);
+        satsHtml += `
+          <g transform="translate(${p.x.toFixed(1)}, ${p.y.toFixed(1)})">
+            <circle cx="0" cy="0" r="9" fill="#00c0ff" opacity="0.25" class="animate-ping" />
+            <circle cx="0" cy="0" r="4.5" fill="#00c0ff" stroke="#07090e" stroke-width="1.5" />
+            <text x="7" y="3" fill="#00c0ff" font-size="8.5" font-family="monospace" font-weight="bold">ISS 空间站</text>
+          </g>
+        `;
+      }
+
+      dom.worldMapSats.innerHTML = satsHtml;
+    }
+  }
+
   // Initialize
   document.addEventListener('DOMContentLoaded', () => {
     initClock();
@@ -920,6 +1108,10 @@
     initPosterModal();
     initRadarSimulation();
     loadData();
+
+    // Start 2D World Map Tracker
+    setTimeout(updateWorldMapTracker, 500);
+    setInterval(updateWorldMapTracker, 1500);
 
     if (window.lucide) {
       lucide.createIcons();

@@ -320,6 +320,98 @@
       </div>
     </section>
 
+    <!-- 优化 4：天基宏观地表实时追踪屏 (2D Global Orbit Tracker) -->
+    <section class="dossier-card hud-corner p-4 sm:p-5 rounded-lg space-y-4 border-cyan-400/25">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
+        <div class="flex items-center space-x-2">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+          </span>
+          <h2 class="font-mono text-xs sm:text-sm tracking-widest uppercase font-bold text-cyan-300 flex items-center">
+            <i data-lucide="globe" class="w-4 h-4 mr-1.5 text-cyan-400"></i>
+            GLOBAL ORBIT TRACKER // 全球空间站与地表星下点实时追踪
+          </h2>
+        </div>
+        <!-- Live coordinates ticker for CSS & ISS -->
+        <div class="flex items-center flex-wrap gap-2 sm:gap-3 text-xs font-mono">
+          <div class="flex items-center space-x-1.5 bg-amber-950/40 border border-amber-400/30 px-2.5 py-1 rounded">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <span class="text-amber-300 font-bold">🇨🇳 天宫:</span>
+            <span id="tracker-css-pos" class="text-slate-200">正在追踪...</span>
+            <span id="tracker-css-alt" class="text-amber-400 text-[10px] hidden sm:inline">392km</span>
+          </div>
+          <div class="flex items-center space-x-1.5 bg-cyan-950/40 border border-cyan-400/30 px-2.5 py-1 rounded">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span class="text-cyan-300 font-bold">🛰️ 国际站:</span>
+            <span id="tracker-iss-pos" class="text-slate-200">正在追踪...</span>
+            <span id="tracker-iss-alt" class="text-cyan-400 text-[10px] hidden sm:inline">420km</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2D Equirectangular World Map Canvas / SVG -->
+      <div class="relative w-full aspect-[2/1] max-h-[340px] bg-slate-950 rounded border border-cyan-400/20 overflow-hidden flex items-center justify-center">
+        <!-- World Map SVG -->
+        <svg id="world-map-svg" viewBox="0 0 720 360" class="w-full h-full text-slate-800">
+          <defs>
+            <radialGradient id="target-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ff2a55" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#ff2a55" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Background Grid (30 deg parallels & meridians) -->
+          <g stroke="rgba(0, 255, 200, 0.08)" stroke-width="0.8" stroke-dasharray="2,2">
+            <line x1="0" y1="60" x2="720" y2="60"/>
+            <line x1="0" y1="120" x2="720" y2="120"/>
+            <line x1="0" y1="180" x2="720" y2="180" stroke="rgba(0, 255, 200, 0.2)" stroke-dasharray="none"/>
+            <line x1="0" y1="240" x2="720" y2="240"/>
+            <line x1="0" y1="300" x2="720" y2="300"/>
+            <line x1="120" y1="0" x2="120" y2="360"/>
+            <line x1="240" y1="0" x2="240" y2="360"/>
+            <line x1="360" y1="0" x2="360" y2="360" stroke="rgba(0, 255, 200, 0.2)" stroke-dasharray="none"/>
+            <line x1="480" y1="0" x2="480" y2="360"/>
+            <line x1="600" y1="0" x2="600" y2="360"/>
+          </g>
+
+          <!-- Simplified Continent Coastlines & Silhouettes (Clean High-Tech Vector) -->
+          <g fill="rgba(15, 23, 42, 0.85)" stroke="rgba(0, 255, 200, 0.22)" stroke-width="1.2">
+            <!-- Eurasia & Africa -->
+            <path d="M 360,110 Q 380,80 430,70 Q 480,60 550,80 Q 600,100 580,140 Q 560,170 520,180 Q 460,200 420,190 Q 390,160 360,150 Q 340,130 360,110 Z" />
+            <path d="M 330,160 Q 380,160 410,210 Q 430,270 390,310 Q 360,330 340,290 Q 320,240 310,200 Q 310,170 330,160 Z" />
+            <!-- East & Southeast Asia / China -->
+            <path d="M 520,100 Q 580,90 610,120 Q 630,160 580,180 Q 540,160 520,130 Z" />
+            <path d="M 570,220 Q 610,210 630,240 Q 610,260 570,250 Z" />
+            <!-- Australia -->
+            <path d="M 570,260 Q 640,250 650,290 Q 620,320 580,310 Q 560,280 570,260 Z" />
+            <!-- North America -->
+            <path d="M 90,70 Q 150,60 220,70 Q 250,110 230,150 Q 200,180 160,170 Q 120,160 90,130 Q 80,100 90,70 Z" />
+            <!-- South America -->
+            <path d="M 190,180 Q 250,200 270,240 Q 250,300 210,340 Q 180,310 170,260 Q 170,210 190,180 Z" />
+          </g>
+
+          <!-- Dynamic Orbit Ground Track Paths -->
+          <g id="world-map-tracks"></g>
+
+          <!-- Observer Target City Location Marker -->
+          <g id="world-map-target"></g>
+
+          <!-- Satellites Real-time Blips -->
+          <g id="world-map-sats"></g>
+        </svg>
+
+        <!-- Compass Cardinal Edge Labels -->
+        <div class="absolute bottom-1.5 left-2.5 text-[9px] font-mono text-slate-500">
+          PROJECTION: WGS-84 EQUIRECTANGULAR // REALTIME SGP4 REFRESH
+        </div>
+        <div class="absolute bottom-1.5 right-2.5 text-[9px] font-mono text-cyan-400 flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>ORBITAL SPEED: ~7.68 KM/S (27,650 KM/H)</span>
+        </div>
+      </div>
+    </section>
+
     <!-- DUAL-DOSSIER TABS SECTION -->
     <section class="space-y-6">
       <!-- Tab Buttons Header -->

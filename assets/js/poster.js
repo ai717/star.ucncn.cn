@@ -279,18 +279,34 @@
       ctx.fillStyle = '#090d16';
       ctx.fillRect(boxX, boxY, boxW, boxH);
 
-      // Try loading real image or fallback to procedural high-tech map
+      // 优化 3：优先加载 NASA GIBS 当日真实卫星影像切片
       let imgLoaded = false;
       const testImage = new Image();
       testImage.crossOrigin = 'anonymous';
 
-      // We can use a high-resolution space imagery URL with promise
+      let candidateUrl = data.tileUrl;
+      if (!candidateUrl && window.OrbitEngine && pass.closestTime) {
+        candidateUrl = window.OrbitEngine.getNasaGibsTileUrl(lat, lon, pass.closestTime);
+      }
+      if (!candidateUrl) {
+        candidateUrl = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1080&q=80';
+      }
+
       const imgPromise = new Promise((resolve) => {
         testImage.onload = () => resolve(true);
-        testImage.onerror = () => resolve(false);
-        // Timeout 1.5s
-        setTimeout(() => resolve(false), 1500);
-        testImage.src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1080&q=80';
+        testImage.onerror = () => {
+          // Fallback to high-res aerial texture
+          const fallback = new Image();
+          fallback.crossOrigin = 'anonymous';
+          fallback.onload = () => {
+            testImage.src = fallback.src;
+            resolve(true);
+          };
+          fallback.onerror = () => resolve(false);
+          fallback.src = 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1080&q=80';
+        };
+        setTimeout(() => resolve(false), 2500); // 2.5s network timeout
+        testImage.src = candidateUrl;
       });
 
       imgLoaded = await imgPromise;
