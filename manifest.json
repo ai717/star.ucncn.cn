@@ -1,0 +1,17 @@
+{
+  "name": "太空偷窥局 | Space Peep Bureau",
+  "short_name": "太空偷窥局",
+  "description": "白天调取被遥感卫星偷拍的绝密地表底片，今晚抬头用肉眼反向抓捕中国空间站与 ISS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2307090e' stroke='%2300ffc8' stroke-width='4'/><text x='50' y='65' font-size='48' text-anchor='middle'>🛰️</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

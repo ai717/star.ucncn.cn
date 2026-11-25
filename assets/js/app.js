@@ -92,19 +92,56 @@
 
   // 2. Tab Navigation
   function initTabs() {
-    if (!dom.tabBtnPast || !dom.tabBtnFuture) return;
+    if (dom.tabBtnPast) {
+      dom.tabBtnPast.addEventListener('click', () => {
+        switchTab('past');
+      });
+    }
 
-    dom.tabBtnPast.addEventListener('click', () => {
-      switchTab('past');
-    });
+    if (dom.tabBtnFuture) {
+      dom.tabBtnFuture.addEventListener('click', () => {
+        switchTab('future');
+      });
+    }
 
-    dom.tabBtnFuture.addEventListener('click', () => {
-      switchTab('future');
-    });
+    // Mobile Bottom Floating Dock Events
+    const mobPast = document.getElementById('mobile-nav-past');
+    const mobFuture = document.getElementById('mobile-nav-future');
+    const mobTracker = document.getElementById('mobile-nav-tracker');
+    const mobGuide = document.getElementById('mobile-nav-guide');
+
+    if (mobPast) {
+      mobPast.addEventListener('click', () => {
+        switchTab('past');
+        if (dom.tabBtnPast) dom.tabBtnPast.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    if (mobFuture) {
+      mobFuture.addEventListener('click', () => {
+        switchTab('future');
+        if (dom.tabBtnFuture) dom.tabBtnFuture.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    if (mobTracker) {
+      mobTracker.addEventListener('click', () => {
+        const trackerSec = document.getElementById('world-map-section');
+        if (trackerSec) trackerSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    if (mobGuide) {
+      mobGuide.addEventListener('click', () => {
+        const guideSec = document.getElementById('briefing-section');
+        if (guideSec) guideSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
   }
 
   function switchTab(targetTab) {
     SPB_STATE.activeTab = targetTab;
+
+    const mobPast = document.getElementById('mobile-nav-past');
+    const mobFuture = document.getElementById('mobile-nav-future');
+
     if (targetTab === 'past') {
       dom.tabBtnPast.classList.add('active');
       dom.tabBtnPast.classList.remove('text-slate-400');
@@ -113,6 +150,11 @@
 
       dom.tabPanelPast.classList.remove('hidden');
       dom.tabPanelFuture.classList.add('hidden');
+
+      if (mobPast && mobFuture) {
+        mobPast.className = 'touch-btn flex flex-col items-center justify-center py-1 px-3 text-cyan-300 active:scale-95 transition';
+        mobFuture.className = 'touch-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-amber-300 active:scale-95 transition';
+      }
     } else {
       dom.tabBtnFuture.classList.add('active');
       dom.tabBtnFuture.classList.remove('text-slate-400');
@@ -121,6 +163,11 @@
 
       dom.tabPanelFuture.classList.remove('hidden');
       dom.tabPanelPast.classList.add('hidden');
+
+      if (mobPast && mobFuture) {
+        mobFuture.className = 'touch-btn flex flex-col items-center justify-center py-1 px-3 text-amber-300 active:scale-95 transition';
+        mobPast.className = 'touch-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-cyan-300 active:scale-95 transition';
+      }
     }
   }
 
@@ -986,8 +1033,8 @@
     if (!window.OrbitEngine || !window.OrbitEngine.getLivePosition) return;
 
     const now = new Date();
-    const MAP_W = 800;
-    const MAP_H = 400;
+    const MAP_W = 720;
+    const MAP_H = 360;
 
     const toSvgCoords = (lat, lon) => {
       const x = ((lon + 180.0) / 360.0) * MAP_W;

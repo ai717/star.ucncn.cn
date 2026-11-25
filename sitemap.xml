@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://star.ucncn.cn/</loc>
+    <lastmod>2026-11-25T14:20:00+08:00</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://star.ucncn.cn/assets/images/og-preview.png</image:loc>
+      <image:title>🛰️ 太空偷窥局 | Space Peep Bureau - 绝密天基监视回溯与空间站抓捕终端</image:title>
+      <image:caption>白天调取被遥感卫星偷拍的绝密地表底片，今晚抬头用肉眼反向抓捕中国空间站与 ISS</image:caption>
+    </image:image>
+  </url>
+</urlset>

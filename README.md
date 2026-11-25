@@ -40,19 +40,51 @@
 
 ---
 
+## 🔍 Google SEO 流量与商业变现最大化架构 (v1.2)
+
+1. **搜索引擎爬虫全友好矩阵**：
+   * **`sitemap.xml`**：符合 Sitemaps 0.9 与 Google Image Sitemap 协议，包含页面抓取频次与大图索引；
+   * **`robots.txt`**：全量放行各大主流搜素引擎爬虫，明确定向 Sitemap 链接；
+   * **`manifest.json`**：完整 PWA 渐进式 Web 应用配置，支持手机端一键“添加到主屏幕”，秒变独立 App。
+2. **Schema.org 深度结构化数据图谱 (JSON-LD)**：
+   * 注入 `WebApplication`（零付费免登录工具定义）、`BreadcrumbList`（层级导航）、`FAQPage`（针对高频 Google 搜索意图的问答结构化，利于触发 SERP 富摘要展示）。
+3. **Google 商业收益与 AdSense 预备架构**：
+   * **高权重硬核知识库**：内置 6 大实战手册板块（光学分辨率、天宫/ISS反光、手机摄影参数、SGP4动力学、目标辨识排雷），彻底避免“内容单薄 (Thin Content)”判定；
+   * **零布局偏移 (CLS 0) 广告位预留**：内置暗黑赛博风格广告槽占位，兼容 Google AdSense 与自营天文望远镜带货分佣体系。
+4. **极致移动端交互优化 (Mobile First Experience)**：
+   * 移动端浮动式底部导航 Dock（底片库 / 抓捕雷达 / 2D全球追踪 / 观测指南 一键触达）；
+   * 严格遵守 `>= 44px` 移动端无障碍触控规范与 `active:scale-97` 微动效；
+   * 快捷城市横向无缝滑轨（无原生滚动条干扰）与 iOS 刘海屏 Safe-Area-Inset 适配；
+   * 移动端 Canvas 海报弹窗自适应视口高度，解决小屏溢出与下载交互痛点。
+
+---
+
 ## 📁 目录工程结构
 
 ```text
 g:\work\code\website\ucncn\star\
 ├── index.html                 # 核心单页（暗黑档案风太空偷窥局终端界面）
+├── sitemap.xml                # Google SEO 站点地图（含图片索引）
+├── robots.txt                 # 爬虫放行与站点索引声明
+├── manifest.json              # PWA 手机主屏幕离线应用配置
+├── CNAME                      # GitHub Pages 绑定域名 (star.ucncn.cn)
 ├── PRD.md                     # 完整产品需求与技术架构说明书
 ├── README.md                  # 项目全景使用与部署指南
 ├── assets/
 │   ├── css/
-│   │   └── style.css          # 机密档案终端 UI、CRT扫描线、绝密钢印与HUD瞄准框
+│   │   └── style.css          # 机密档案终端 UI、CRT扫描线、绝密钢印、移动端 Dock 样式
 │   ├── data/
 │   │   ├── satellites.json    # 核心卫星 NORAD TLE 双行根数与载荷参数
 │   │   └── cities.json        # 国内外大城市坐标离线词典
+│   └── js/
+│       ├── satellite.min.js   # SGP4/SDP4 轨道力学计算引擎
+│       ├── orbit.js           # 太阳位置、日夜地影判定、过境筛选、NASA切片模块
+│       ├── poster.js          # 9:16 HTML5 Canvas 绝密海报生成器
+│       └── app.js             # 终端核心交互控制、时钟、地理反查、移动端导航联动
+└── scripts/
+    ├── update_tle.py          # CelesTrak 卫星最新星历自动抓取脚本
+    └── nginx_star.ucncn.cn.conf # 生产环境 Nginx 高性能配置模版
+```
 │   └── js/
 │       ├── satellite.min.js   # SGP4/SDP4 轨道力学计算引擎
 │       ├── orbit.js           # 太阳位置、日夜地影判定、过境筛选模块

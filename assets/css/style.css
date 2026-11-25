@@ -260,3 +260,63 @@ html, body {
   border: 1px solid rgba(255, 184, 0, 0.35);
   color: #ffc42e;
 }
+
+/* ==========================================================================
+   Mobile UI & Interaction Enhancements
+   ========================================================================== */
+
+/* Hide scrollbars while allowing touch swiping */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch-optimized button states */
+.touch-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+.touch-btn:active {
+  transform: scale(0.97);
+}
+
+/* Mobile sticky bottom HUD navigation dock */
+.mobile-bottom-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  background: rgba(7, 9, 14, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(0, 255, 200, 0.25);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 255, 200, 0.08);
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+}
+
+/* Safe Area Inset Utility */
+.pb-safe {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile responsive typography adjustments */
+@media (max-width: 640px) {
+  .stamp-classified {
+    font-size: 11px;
+    padding: 3px 6px;
+    letter-spacing: 2px;
+  }
+  
+  .hud-corner::before,
+  .hud-corner::after {
+    width: 6px;
+    height: 6px;
+  }
+}
+

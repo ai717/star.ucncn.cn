@@ -2,38 +2,90 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🛰️ 太空偷窥局 | Space Peep Bureau (SPB) - 绝密天基监视回溯与空间站抓捕终端</title>
-  <meta name="description" content="你以为你在独处，其实头顶有 17,000 颗眼睛在看你。太空偷窥局(SPB)提供过去7天对地遥感卫星偷窥底片调取，与未来夜间中国空间站天宫、国际空间站肉眼反向抓捕雷达。">
-  <meta name="keywords" content="太空偷窥局, 卫星过境查询, 空间站肉眼可见, 遥感卫星底片, Sentinel-2, Landsat, 天宫空间站, ISS过境, star.ucncn.cn">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>🛰️ 太空偷窥局 (SPB) | 卫星过境实时查询 · 中国空间站/ISS肉眼可见预报 · 天基遥感底片回溯</title>
+  <meta name="description" content="你以为你在独处，其实头顶有 17,000 颗眼睛在看你。太空偷窥局(Space Peep Bureau)提供过去7天欧空局哨兵与陆地卫星对地遥感快门底片回溯，并毫秒级预测未来72小时中国空间站(天宫/CSS)、国际空间站(ISS)夜间肉眼可见高仰角过境。支持一键导出手机日历提醒与9:16机密海报生成。">
+  <meta name="keywords" content="太空偷窥局, 空间站过境查询, 卫星过境实时查询, 中国空间站肉眼可见, 天宫空间站过境时间, 国际空间站过境, 卫星经过头顶, 卫星偷窥底片, 遥感卫星轨道, Sentinel-2, Landsat, satellite tracker, ISS pass predictor, star.ucncn.cn">
+  <meta name="author" content="太空偷窥局 (SPB)">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://star.ucncn.cn/">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#07090e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="太空偷窥局">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2307090e' stroke='%2300ffc8' stroke-width='4'/><text x='50' y='65' font-size='48' text-anchor='middle'>🛰️</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='48' fill='%2307090e' stroke='%2300ffc8' stroke-width='4'/><text x='50' y='65' font-size='48' text-anchor='middle'>🛰️</text></svg>">
+
+  <!-- Resource Preconnects -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://api.open-meteo.com">
+  <link rel="dns-prefetch" href="https://gibs.earthdata.nasa.gov">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="🛰️ 太空偷窥局 - 你以为你在独处，其实头顶有 17,000 颗眼睛在看你">
-  <meta property="og:description" content="白天调取被偷拍底片，今晚抬头反抓空间站。基于真实 SGP4 轨道算法与 NASA/ESA 遥感切片。">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://star.ucncn.cn">
+  <meta property="og:site_name" content="太空偷窥局 (Space Peep Bureau)">
+  <meta property="og:title" content="🛰️ 太空偷窥局 - 你以为你在独处，其实头顶有 17,000 颗眼睛在看你">
+  <meta property="og:description" content="白天调取被遥感卫星偷拍的绝密地表底片，今晚抬头用肉眼反向抓捕中国空间站与 ISS。纯前端 SGP4 实时轨道动力学解算，零隐私泄露。">
+  <meta property="og:url" content="https://star.ucncn.cn/">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80">
+  <meta property="og:image:alt" content="太空偷窥局全球轨道监视与空间站反向抓捕雷达界面">
 
-  <!-- Schema.org SEO Structured Data (SoftwareApplication & FAQPage) -->
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="🛰️ 太空偷窥局 | 卫星过境实时查询 · 中国空间站肉眼抓捕雷达">
+  <meta name="twitter:description" content="白天调取被偷拍底片，今晚抬头反抓空间站。基于真实 SGP4 轨道算法与 NASA/ESA 遥感切片，一键导出手机日历提醒。">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80">
+
+  <!-- Schema.org Rich Structured Data Graph -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "SoftwareApplication",
-        "name": "太空偷窥局 (Space Peep Bureau)",
-        "operatingSystem": "All Web Browsers",
+        "@type": "WebApplication",
+        "@id": "https://star.ucncn.cn/#webapp",
+        "name": "太空偷窥局 (Space Peep Bureau - SPB)",
+        "url": "https://star.ucncn.cn/",
+        "operatingSystem": "All Web Browsers (iOS, Android, Windows, macOS, Linux)",
         "applicationCategory": "EducationalApplication",
+        "inLanguage": "zh-CN",
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "CNY"
         },
-        "url": "https://star.ucncn.cn",
-        "description": "基于真实 SGP4 轨道力学与 NASA/ESA 遥感切片的天基对地监视底片回溯与中国空间站、ISS 肉眼反向抓捕终端。"
+        "description": "基于真实 SGP4 轨道力学与 NASA/ESA 遥感切片的天基对地监视底片回溯与中国空间站(天宫/CSS)、国际空间站(ISS)夜间肉眼反向抓捕雷达终端。"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://star.ucncn.cn/#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "首页",
+            "item": "https://star.ucncn.cn/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "卷宗一·被偷窥底片库",
+            "item": "https://star.ucncn.cn/#past"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "卷宗二·空间站反向抓捕雷达",
+            "item": "https://star.ucncn.cn/#future"
+          }
+        ]
       },
       {
         "@type": "FAQPage",
+        "@id": "https://star.ucncn.cn/#faq",
         "mainEntity": [
           {
             "@type": "Question",
@@ -65,6 +117,22 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "不需要专业天文望远镜！当最高仰角大于 30° 且视星等低于 0 等时，在城市只要避开强路灯直射，肉眼即可清晰看到一颗平稳划过星空、不闪烁且无航行声音的极亮金色光点。观测最佳时机为过境最高仰角（Max Elevation）时刻的前后 2 分钟。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "如何用智能手机拍摄中国空间站过境划过的轨迹？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "使用三脚架或将手机固定放置。打开手机自带相机『专业模式』或『夜景模式』，将感光度 ISO 调至 200~800，曝光快门时间设为 4~10 秒，对焦拉至无限远。在空间站升起前 10 秒按下快门，即可拍出一条耀眼的金色星轨线条。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "如何将过境提醒一键添加到 iPhone 或安卓手机系统日历？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "在太空偷窥局『反向抓捕雷达』列表中，每一条满足肉眼可见条件的过境记录右侧均配有【⏰ 写入手机日历】按钮。点击后会自动下载标准的 .ics 日历文件，在 iOS 或 Android 上轻触即可直接存入系统日历，并自动设定提前 15 分钟准备告警。"
             }
           }
         ]
@@ -321,7 +389,7 @@
     </section>
 
     <!-- 优化 4：天基宏观地表实时追踪屏 (2D Global Orbit Tracker) -->
-    <section class="dossier-card hud-corner p-4 sm:p-5 rounded-lg space-y-4 border-cyan-400/25">
+    <section id="world-map-section" class="dossier-card hud-corner p-4 sm:p-5 rounded-lg space-y-4 border-cyan-400/25">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cyan-400/10 pb-3">
         <div class="flex items-center space-x-2">
           <span class="relative flex h-2.5 w-2.5">
@@ -416,22 +484,22 @@
     <section class="space-y-6">
       <!-- Tab Buttons Header -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between border-b border-cyan-400/20 gap-3 pb-2">
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
           <!-- Tab 1 -->
-          <button id="tab-btn-past" class="tab-btn active px-4 sm:px-6 py-3 font-mono text-sm sm:text-base font-bold rounded-t tracking-wider flex items-center">
-            <i data-lucide="film" class="w-4 h-4 mr-2"></i>
+          <button id="tab-btn-past" class="tab-btn active touch-btn flex-1 sm:flex-initial px-3 sm:px-6 py-3 sm:py-3.5 font-mono text-xs sm:text-base font-bold rounded-t tracking-wider flex items-center justify-center">
+            <i data-lucide="film" class="w-4 h-4 mr-1.5 sm:mr-2"></i>
             <span>卷宗 01：被偷窥底片库</span>
-            <span class="ml-2 text-[10px] font-normal px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
-              过去 7 天对地影像
+            <span class="ml-1.5 sm:ml-2 text-[10px] font-normal px-1.5 sm:px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
+              过去 7 天
             </span>
           </button>
 
           <!-- Tab 2 -->
-          <button id="tab-btn-future" class="tab-btn px-4 sm:px-6 py-3 font-mono text-sm sm:text-base font-bold rounded-t tracking-wider text-slate-400 hover:text-cyan-300 flex items-center">
-            <i data-lucide="radar" class="w-4 h-4 mr-2"></i>
+          <button id="tab-btn-future" class="tab-btn touch-btn flex-1 sm:flex-initial px-3 sm:px-6 py-3 sm:py-3.5 font-mono text-xs sm:text-base font-bold rounded-t tracking-wider text-slate-400 hover:text-cyan-300 flex items-center justify-center">
+            <i data-lucide="radar" class="w-4 h-4 mr-1.5 sm:mr-2"></i>
             <span>卷宗 02：反向抓捕雷达</span>
-            <span class="ml-2 text-[10px] font-normal px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
-              未来 3 晚肉眼可见
+            <span class="ml-1.5 sm:ml-2 text-[10px] font-normal px-1.5 sm:px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
+              未来 3 晚
             </span>
           </button>
         </div>
@@ -852,95 +920,136 @@
     </section>
 
     <!-- SCIENTIFIC PRINCIPLES & SEO KNOWLEDGE BASE -->
-    <section class="dossier-card hud-corner p-6 sm:p-8 rounded-lg space-y-6 border-slate-700/80">
+    <section id="briefing-section" class="dossier-card hud-corner p-6 sm:p-8 rounded-lg space-y-6 border-slate-700/80">
       <div class="border-b border-cyan-400/20 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h2 class="text-lg sm:text-xl font-bold font-mono text-cyan-300 flex items-center">
             <i data-lucide="book-open" class="w-5 h-5 mr-2 text-cyan-400"></i>
-            DECLASSIFIED BRIEFING // 空间光学与天体观测硬核科普手册
+            DECLASSIFIED BRIEFING // 空间光学与天体观测硬核实战手册
           </h2>
-          <p class="text-xs text-slate-400 mt-1">深度解构天基对地侦察、SGP4 轨道动力学模型与空间站肉眼反抓光学原理</p>
+          <p class="text-xs text-slate-400 mt-1">天基对地光学侦察、SGP4 轨道动力学模型与空间站夜间肉眼反抓光学指南（SEO 指南库）</p>
         </div>
-        <span class="text-xs font-mono text-slate-500 self-end sm:self-auto">DEEP BRIEFING v1.0</span>
+        <span class="text-xs font-mono text-cyan-400 border border-cyan-400/30 px-2 py-0.5 rounded bg-cyan-950/40 self-end sm:self-auto">DEEP BRIEFING v2.0</span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 text-sm text-slate-300">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-sm text-slate-300">
         <!-- Topic 1 -->
-        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+        <article class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 01</span>
-            <span class="text-[10px] font-mono text-slate-500">OPTICAL IMAGERY</span>
+            <span class="text-[10px] font-mono text-slate-500">OPTICAL RESOLUTION</span>
           </div>
           <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
-            遥感卫星真能看清你在做什么吗？
+            遥感侦察卫星真能看清你吗？民用与军用分辨率解析
           </h3>
           <p class="text-xs text-slate-400 leading-relaxed">
-            民用开放遥感卫星（如欧空局 Sentinel-2 分辨率约 10 米、Landsat-9 约 15 米），单像素相当于一辆厢式货车大小，用于宏观植被与地貌演变，不会泄露个人面部或车牌。但头顶运行的几十颗商用级高分卫星（如 WorldView-3、高景系列）亚米级分辨率达 0.3 米，建筑物门前停放的车辆品牌轮廓已能清晰投射。
+            国际公开的民用遥感卫星（如欧空局 Sentinel-2 哨兵系列分辨率约 10 米，USGS Landsat-9 陆地卫星约 15 米），单像素相当于半个网球场大小，主要用于宏观地质与气象监测，绝无泄露个人面部或车牌风险；而商业高分遥感（如 WorldView-3、高景系列）0.3 米亚米级分辨率，已能清晰分辨车辆天窗与建筑物投射阴影。
           </p>
-        </div>
+        </article>
 
         <!-- Topic 2 -->
-        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-amber-400/40 transition">
+        <article class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-amber-400/40 transition">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <span class="text-amber-400 font-mono text-xs font-bold">TOPIC // 02</span>
-            <span class="text-[10px] font-mono text-slate-500">CSS TIANGONG</span>
+            <span class="text-[10px] font-mono text-slate-500">CSS TIANGONG TRANSIT</span>
           </div>
           <h3 class="font-bold text-slate-100 text-sm text-amber-300 leading-snug">
-            中国空间站 (天宫) 肉眼抓捕实战秘籍
+            🇨🇳 中国空间站 (天宫) 肉眼反抓实操指南
           </h3>
           <p class="text-xs text-slate-400 leading-relaxed">
-            天宫运行在倾角 41.5°、高度约 390km 的近地轨道。当其过境最高仰角（Max Elevation）大于 35° 时，即便身处一线城市市中心灯火中，肉眼也能清晰目睹一颗明亮如金星的金色光点在 3~6 分钟内静默划过天顶。它无声音、无航行灯交替闪烁，呈现稳恒超高反光，是夜晚最引人注目的国家重器。
+            天宫运行在倾角 41.5°、高度约 390km 的近地轨道。当过境最高仰角（Max Elevation）大于 35° 时，即便身处一线城市市中心灯火中，肉眼也能清晰目睹一颗明亮如金星的金色光点在 3~6 分钟内静默划过天顶。它无声音、无航行灯交替闪烁，呈现稳恒超高反光，是夜晚最引人注目的国家重器。
           </p>
-        </div>
+        </article>
 
         <!-- Topic 3 -->
-        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+        <article class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
             <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 03</span>
-            <span class="text-[10px] font-mono text-slate-500">SGP4 PROPAGATION</span>
+            <span class="text-[10px] font-mono text-slate-500">ISS & HUBBLE OPTICS</span>
           </div>
           <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
-            SGP4/SDP4 轨道摄动与纯前端无痕计算
+            🛰️ 国际空间站 (ISS) 与哈勃望远镜反光特性
+          </h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            国际空间站拥有足球场大小的柔性太阳能电池翼阵列，反射太阳光至地表的视星等可达 -3.5 等（远亮于全天最明亮的天然恒星天狼星 -1.46 等）。在城市 7~8 级 Bortle 光害区，普通肉眼极限星等约 +3.0 等，这意味着国际空间站过境在市中心商圈抬头即可瞬间捕捉。
+          </p>
+        </article>
+
+        <!-- Topic 4 -->
+        <article class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-emerald-400/40 transition">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-emerald-400 font-mono text-xs font-bold">TOPIC // 04</span>
+            <span class="text-[10px] font-mono text-slate-500">MOBILE ASTROPHOTOGRAPHY</span>
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm text-emerald-300 leading-snug">
+            📱 手机拍摄空间站划过夜空的专业摄影参数
+          </h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            拍摄空间站无需沉重单反。使用三脚架或将手机平稳固定，打开手机自带相机『专业模式』：ISO 感光度设定在 200~800，曝光快门设定为 4~10 秒，对焦锁定至无限远（Manual Focus ∞）。在过境最高仰角前 15 秒按下快门，即可捕获一条贯穿星空的耀眼金色航迹光线。
+          </p>
+        </article>
+
+        <!-- Topic 5 -->
+        <article class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 05</span>
+            <span class="text-[10px] font-mono text-slate-500">SGP4 & PRIVACY FIRST</span>
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
+            📐 SGP4 轨道动力学模型与纯前端无痕计算
           </h3>
           <p class="text-xs text-slate-400 leading-relaxed">
             太空偷窥局终端彻底摒弃服务器转发架构，将轨道摄动力学直接部署至浏览器客户端运行。基于北美防空司令部 (NORAD) 双行轨道根数 (TLE)，精细建模地球非球形重力场（J2~J4引力势）与稀薄大气阻力，在毫秒内完成地心坐标至观察者极坐标的投影，全程零隐私泄露、零痕迹存留。
           </p>
-        </div>
+        </article>
 
-        <!-- Topic 4 -->
-        <div class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-cyan-400/40 transition">
+        <!-- Topic 6 -->
+        <article class="space-y-2.5 bg-slate-950/60 p-4 rounded border border-slate-800 hover:border-red-400/40 transition">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="text-cyan-400 font-mono text-xs font-bold">TOPIC // 04</span>
-            <span class="text-[10px] font-mono text-slate-500">MAGNITUDE & LIGHT</span>
+            <span class="text-red-400 font-mono text-xs font-bold">TOPIC // 06</span>
+            <span class="text-[10px] font-mono text-slate-500">TARGET DISCRIMINATION</span>
           </div>
-          <h3 class="font-bold text-slate-100 text-sm text-cyan-300 leading-snug">
-            视星等换算与城市暗夜光害等级
+          <h3 class="font-bold text-slate-100 text-sm text-red-300 leading-snug">
+            ⚠️ 观星排雷：如何一眼辨识空间站与流星/客机/无人机
           </h3>
           <p class="text-xs text-slate-400 leading-relaxed">
-            视星等数值越低、负值越大代表天体越亮。中国空间站过顶反光常达 -2.5 等，国际空间站更可达 -3.5 等（远亮于全天最亮恒星天狼星 -1.46 等）。在城市 7~8 级光害区（Bortle 标度），普通肉眼可见极限星等约 +3.0 等，这意味着空间站即使在市中心商圈抬头亦肉眼可见。
+            民航客机通常有规律闪烁的红绿防撞灯并伴随低沉轰鸣；无人机多在低空变速悬停；流星仅持续 0.5~2 秒且带燃烧烟迹；星链 (Starlink) 往往呈多星排队连珠线。而空间站则像一颗毫无声息、恒定发亮、匀速划破夜空的超级金色大星，通常需要 3~6 分钟完整飞越地平线。
           </p>
+        </article>
+      </div>
+
+      <!-- Google AdSense / Monetization Ready Slot Placeholder -->
+      <div class="ad-slot-container my-4 p-4 rounded bg-slate-950/50 border border-dashed border-cyan-400/25 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
+        <div class="flex items-center space-x-2 text-slate-400">
+          <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+          <span>SPB ORBIT PATRON // 探索无垠深空，支持天基光学开放科学计划</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <a href="https://github.com/ai717/star.ucncn.cn" target="_blank" class="px-3 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded transition">
+            ⭐ GitHub Star 支持
+          </a>
         </div>
       </div>
     </section>
 
     <!-- POSTER GENERATOR MODAL SKELETON (Phase 3 readiness) -->
-    <div id="poster-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-      <div class="dossier-card hud-corner max-w-lg w-full p-6 rounded-lg space-y-4 border-cyan-400/50 relative">
-        <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+    <div id="poster-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+      <div class="dossier-card hud-corner max-w-lg w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-lg space-y-4 border-cyan-400/50 relative">
+        <button id="btn-close-modal" class="touch-btn absolute top-3 right-3 text-slate-400 hover:text-white p-2">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
 
         <div class="flex items-center space-x-2 border-b border-cyan-400/20 pb-3">
           <span class="stamp-classified text-xs">TOP SECRET</span>
-          <h3 class="text-base font-bold text-white font-mono">《绝密·天基被偷窥档案》海报预览</h3>
+          <h3 class="text-sm sm:text-base font-bold text-white font-mono">《绝密·天基被偷窥档案》海报预览</h3>
         </div>
 
-        <!-- Canvas Poster Render Area Placeholder -->
-        <div class="relative bg-slate-950 rounded border border-cyan-400/30 aspect-[9/16] max-h-[520px] mx-auto flex flex-col items-center justify-between p-6 overflow-hidden">
+        <!-- Canvas Poster Render Area -->
+        <div class="relative bg-slate-950 rounded border border-cyan-400/30 aspect-[9/16] max-h-[48vh] sm:max-h-[58vh] mx-auto flex flex-col items-center justify-between p-4 sm:p-6 overflow-hidden">
           <canvas id="poster-canvas" class="w-full h-full object-contain"></canvas>
           <div id="poster-placeholder" class="text-center my-auto space-y-2 text-slate-400">
             <i data-lucide="camera" class="w-10 h-10 mx-auto text-cyan-400 animate-pulse"></i>
-            <div class="text-xs font-mono text-cyan-300">CANVAS POSTER ENGINE // PHASE 3 READY</div>
+            <div class="text-xs font-mono text-cyan-300">CANVAS POSTER ENGINE // NASA GIBS ACTIVE</div>
             <p class="text-[11px] text-slate-500 max-w-xs">
               正在合成当前坐标、Sentinel-2 遥感切片、十字瞄准线与绝密钢印...
             </p>
@@ -948,16 +1057,38 @@
         </div>
 
         <div class="flex items-center justify-end space-x-3 pt-2">
-          <button id="btn-cancel-poster" class="px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono">
+          <button id="btn-cancel-poster" class="touch-btn min-h-[44px] px-4 py-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono">
             关闭
           </button>
-          <button id="btn-download-poster" class="px-5 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs font-mono flex items-center space-x-1.5 transition">
+          <button id="btn-download-poster" class="touch-btn min-h-[44px] px-5 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs font-mono flex items-center space-x-1.5 transition">
             <i data-lucide="download" class="w-4 h-4"></i>
             <span>保存海报发朋友圈/小红书</span>
           </button>
         </div>
       </div>
     </div>
+
+  </main>
+
+  <!-- MOBILE FLOATING BOTTOM HUD DOCK (md:hidden) -->
+  <nav class="mobile-bottom-dock md:hidden px-3 py-1.5 flex items-center justify-around text-xs font-mono border-t border-cyan-400/30">
+    <button id="mobile-nav-past" class="touch-btn flex flex-col items-center justify-center py-1 px-3 text-cyan-300 active:scale-95 transition">
+      <i data-lucide="film" class="w-4 h-4 mb-0.5"></i>
+      <span class="text-[10px]">底片库</span>
+    </button>
+    <button id="mobile-nav-future" class="touch-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-amber-300 active:scale-95 transition">
+      <i data-lucide="radar" class="w-4 h-4 mb-0.5"></i>
+      <span class="text-[10px]">抓捕雷达</span>
+    </button>
+    <button id="mobile-nav-tracker" class="touch-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-cyan-300 active:scale-95 transition">
+      <i data-lucide="globe" class="w-4 h-4 mb-0.5"></i>
+      <span class="text-[10px]">2D追踪</span>
+    </button>
+    <button id="mobile-nav-guide" class="touch-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-cyan-300 active:scale-95 transition">
+      <i data-lucide="book-open" class="w-4 h-4 mb-0.5"></i>
+      <span class="text-[10px]">观星手册</span>
+    </button>
+  </nav>
 
   </main>
 
